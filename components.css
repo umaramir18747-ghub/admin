@@ -1,0 +1,554 @@
+/* ================== components.css ================== */
+/* Consolidated CSS for all components (Header, Sidebar, Main Panel) */
+/* Used by: Dashboard, Student, Teacher, Admission, Academic Managers */
+
+:root {
+  /* === BLUE THEME from index.css === */
+  --ink: oklch(22% .035 300);
+  --ink-soft: oklch(38% .03 300);
+  --paper: oklch(97% .015 86);
+  --surface: oklch(100% .008 86);
+  --line: oklch(88% .025 86);
+  --blue: oklch(48% .18 260);
+  --blue-deep: oklch(32% .16 260);
+  --blue-soft: oklch(82% .09 260);
+  --gold: oklch(78% .15 85);
+  --lime: oklch(82% .17 108);
+  --ease: cubic-bezier(.16, 1, .3, 1);
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'DM Sans', 'Segoe UI', Roboto, sans-serif;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  background: #f4f7fc;
+  color: var(--ink);
+}
+
+/* ========== HEADER ========== */
+.top-bar {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 70px;
+  background: white;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  z-index: 1000;
+  border-bottom: 1px solid var(--line);
+}
+
+.top-bar-left, 
+.top-bar-right {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.header-icons {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: #f8fafd;
+  border: 1px solid var(--line);
+  width: 42px;
+  height: 42px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--blue);
+  font-size: 20px;
+  transition: all 0.2s var(--ease);
+}
+
+.icon-btn:hover {
+  background: var(--blue);
+  color: white;
+  border-color: var(--blue);
+}
+
+.school-logo {
+  width: 42px;
+  height: 42px;
+  overflow: hidden;
+}
+
+.school-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+.school-name {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.2px;
+}
+
+.school-name-wrap {
+  display: flex;
+  align-items: center;
+}
+
+.datetime-display {
+  background: #f8fafd;
+  padding: 8px 16px;
+  border: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  font-size: 14.5px;
+  border-radius: 4px;
+}
+
+.date-box, 
+.time-box {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.date-box i, 
+.time-box i {
+  color: var(--blue);
+  font-size: 16px;
+}
+
+.date-text, 
+.time-text {
+  font-weight: 600;
+  color: var(--ink-soft);
+}
+
+.time-text {
+  font-family: 'Courier New', monospace;
+  letter-spacing: 1px;
+}
+
+/* ========== HEADER DROPDOWN ========== */
+.header-dropdown {
+  position: relative;
+}
+
+.dropdown-menu {
+  position: absolute;
+  right: 0;
+  top: 62px;
+  background: white;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
+  width: 200px;
+  overflow: hidden;
+  border-radius: 4px;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(8px);
+  transition: all 0.2s var(--ease);
+  z-index: 1100;
+  border: 1px solid var(--line);
+}
+
+.dropdown-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 20px;
+  color: var(--ink-soft);
+  text-decoration: none;
+  font-size: 14.8px;
+  transition: all 0.2s var(--ease);
+}
+
+.dropdown-item:hover {
+  background: var(--blue-soft);
+  color: var(--blue);
+}
+
+.dropdown-item i {
+  width: 20px;
+  color: var(--blue);
+}
+
+.dropdown-item:hover i {
+  color: var(--blue);
+}
+
+/* ========== APP WRAPPER ========== */
+.app-wrapper {
+  display: flex;
+  margin-top: 70px;
+  min-height: calc(100vh - 70px);
+  transition: all 0.3s var(--ease);
+}
+
+/* ========== SIDEBAR ========== */
+.side-nav {
+  width: 260px;
+  background: white;
+  border-right: 1px solid var(--line);
+  padding: 20px 0;
+  position: sticky;
+  top: 70px;
+  height: calc(100vh - 70px);
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.02);
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+  border-radius: 0;
+  transition: width 0.3s var(--ease), transform 0.3s var(--ease);
+}
+
+.side-nav.hidden {
+  width: 0;
+  overflow: hidden;
+  padding: 0;
+  border-right: none;
+}
+
+.nav-menu {
+  list-style: none;
+  flex: 1;
+}
+
+.nav-divider {
+  height: 2px;
+  background: var(--blue);
+  margin: 16px 20px;
+  opacity: 0.3;
+}
+
+.section-header {
+  padding: 0 22px 8px;
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+  opacity: 0.7;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 22px;
+  color: var(--ink);
+  font-size: 14.8px;
+  font-weight: 500;
+  text-decoration: none;
+  transition: all 0.2s var(--ease);
+  border-left: 4px solid transparent;
+  white-space: nowrap;
+}
+
+.nav-link:hover {
+  background: var(--blue-soft);
+  color: var(--blue-deep);
+  border-left-color: var(--blue);
+}
+
+.nav-link.active,
+.dashboard-link {
+  background: var(--blue-soft);
+  color: var(--blue-deep);
+  border-left-color: var(--blue);
+}
+
+.nav-link i {
+  width: 22px;
+  color: var(--blue);
+  font-size: 18px;
+  transition: color 0.2s var(--ease);
+}
+
+.nav-link:hover i,
+.nav-link.active i,
+.dashboard-link i {
+  color: var(--blue-deep);
+}
+
+/* Hide text when sidebar is collapsed on desktop */
+.side-nav.hidden .nav-link span,
+.side-nav.hidden .section-header,
+.side-nav.hidden .nav-divider,
+.side-nav.hidden .sidebar-footer {
+  display: none;
+}
+
+.side-nav.hidden .nav-link {
+  padding: 13px 0;
+  justify-content: center;
+}
+
+.side-nav.hidden .nav-link i {
+  margin: 0;
+  font-size: 20px;
+}
+
+/* ========== SIDEBAR DROPDOWNS ========== */
+.dropdown-nav {
+  position: relative;
+}
+
+.dropdown-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  width: 100%;
+  padding: 13px 22px;
+  color: var(--ink);
+  font-size: 14.8px;
+  font-weight: 500;
+  text-decoration: none;
+  border-left: 4px solid transparent;
+  gap: 14px;
+  transition: all 0.2s var(--ease);
+  background: transparent;
+  border-right: none;
+  border-top: none;
+  border-bottom: none;
+}
+
+.dropdown-toggle:hover {
+  background: var(--blue-soft);
+  border-left-color: var(--blue);
+  color: var(--blue-deep);
+}
+
+.dropdown-arrow {
+  font-size: 12px;
+  transition: transform 0.3s var(--ease);
+  margin-left: auto;
+  color: var(--blue);
+  flex-shrink: 0;
+}
+
+.dropdown-nav.active .dropdown-arrow {
+  transform: rotate(180deg);
+}
+
+.dropdown-menu-side {
+  list-style: none;
+  background: var(--blue-soft);
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-out;
+  margin-left: 24px;
+  border-left: 2px solid var(--blue);
+  opacity: 0.6;
+}
+
+.dropdown-nav.active .dropdown-menu-side {
+  max-height: 400px;
+  transition: max-height 0.5s ease-in;
+}
+
+.dropdown-item-side {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  color: var(--ink);
+  text-decoration: none;
+  font-size: 14px;
+  transition: all 0.2s var(--ease);
+}
+
+.dropdown-item-side:hover {
+  background: var(--blue);
+  color: white;
+}
+
+.dropdown-item-side i {
+  width: 20px;
+  font-size: 14px;
+  color: var(--blue);
+  transition: color 0.2s var(--ease);
+}
+
+.dropdown-item-side:hover i {
+  color: white;
+}
+
+/* ========== SIDEBAR FOOTER ========== */
+.sidebar-footer {
+  padding: 22px 24px;
+  border-top: 1px solid var(--line);
+  margin-top: auto;
+}
+
+.developed-by {
+  font-size: 13.2px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+  text-align: center;
+}
+
+.developed-by .label {
+  display: block;
+  font-weight: 500;
+  margin-bottom: 5px;
+  color: var(--ink-soft);
+  opacity: 0.7;
+}
+
+.developed-by .name {
+  display: block;
+  font-weight: 700;
+  color: var(--blue);
+}
+
+/* ========== MAIN CONTENT PANEL ========== */
+.main-panel {
+  flex: 1;
+  padding: 40px 32px;
+  background: var(--paper);
+  overflow-y: auto;
+  transition: margin-left 0.3s var(--ease);
+}
+
+.top-row {
+  display: flex;
+  gap: 28px;
+  margin-bottom: 40px;
+  align-items: stretch;
+}
+
+.welcome-section {
+  flex: 1;
+  background: white;
+  padding: 36px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+}
+
+.welcome-title {
+  font-size: 27px;
+  font-weight: 700;
+  color: var(--ink);
+  margin-bottom: 16px;
+}
+
+.welcome-title span {
+  color: var(--blue);
+}
+
+.welcome-text {
+  font-size: 15.8px;
+  color: var(--ink-soft);
+  line-height: 1.75;
+  margin-bottom: 12px;
+}
+
+/* ========== PROFILE SIDEBAR ========== */
+.profile-sidebar {
+  width: 260px;
+  background: white;
+  padding: 32px 24px;
+  text-align: center;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.passport-frame {
+  width: 158px;
+  height: 198px;
+  margin: 0 auto 18px;
+  border: 4px solid var(--blue);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.passport-frame img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.profile-name {
+  font-size: 21px;
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.profile-role {
+  font-size: 14.5px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  opacity: 0.8;
+}
+
+/* ========== UTILITY CLASSES ========== */
+button {
+  border-radius: 4px;
+}
+
+/* Overlay for mobile sidebar */
+.sidebar-overlay {
+  display: none;
+  position: fixed;
+  top: 70px;
+  left: 0;
+  width: 100%;
+  height: calc(100% - 70px);
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 998;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.25s var(--ease);
+}
+
+.sidebar-overlay.active {
+  opacity: 1;
+  visibility: visible;
+  display: block;
+}
+
+/* Scrollbar styling */
+.side-nav::-webkit-scrollbar,
+.main-panel::-webkit-scrollbar {
+  width: 6px;
+}
+
+.side-nav::-webkit-scrollbar-track,
+.main-panel::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.side-nav::-webkit-scrollbar-thumb,
+.main-panel::-webkit-scrollbar-thumb {
+  background: var(--blue-soft);
+  border-radius: 3px;
+}
+
+.side-nav::-webkit-scrollbar-thumb:hover,
+.main-panel::-webkit-scrollbar-thumb:hover {
+  background: var(--blue);
+}

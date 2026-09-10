@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>Muhammad Education Institute · Portal Login</title>
+  <link rel="icon" type="image/png" href="logo2.png" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Playfair+Display:ital,wght@0,700;1,700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="index.css" />
+</head>
+<body>
+  <main class="page">
+    <!-- LEFT: Brand (logo + school name) -->
+    <section class="brand-panel" aria-label="Institute introduction">
+      <div class="wordmark">
+        <div class="mark" id="logoTrigger" role="button" tabindex="0" aria-label="View logo full size">
+          <img src="logo.png" alt="Muhammad Education Institute Logo" />
+        </div>
+        <span class="school-name">Muhammad Education Institute</span>
+      </div>
+      <div class="brand-copy">
+        <p class="kicker">Learn with intent</p>
+        <h1>Make your next move count.</h1>
+        <p>One place for your classes, campus, fee, results, attendance <b>updates</b> and the people who make learning matter.</p>
+      </div>
+      <div class="panel-foot">
+        <div class="portal-access">
+          <span class="highlight">✦</span> Students
+          <span class="divider-dot">·</span> Teachers
+          <span class="divider-dot">·</span> Admin
+          <span class="highlight-end">✦</span>
+        </div>
+        <span class="session">Muhammad Umar</span>
+      </div>
+    </section>
+
+    <!-- RIGHT: Auth -->
+    <section class="auth-panel" aria-label="Portal sign in">
+      <div class="auth-wrap">
+        <div class="auth-top">
+          <span class="mini-brand">Portal access</span>
+          <span class="help-link" id="helpLink">Need help?</span>
+        </div>
+
+        <div class="auth-heading">
+          <h2>Welcome back.</h2>
+          <p>Sign in to continue to your Muhammad Education Institute portal.</p>
+        </div>
+
+        <div class="role-switch" role="tablist" aria-label="Choose portal role">
+          <button class="active" role="tab" aria-selected="true" data-role="student">Student</button>
+          <button role="tab" aria-selected="false" data-role="teacher">Teacher</button>
+          <button role="tab" aria-selected="false" data-role="manager">Admin</button>
+        </div>
+
+        <form id="loginForm" novalidate>
+          <div class="field">
+            <label for="username">Username / Registration No.</label>
+            <div class="input-wrap">
+              <input id="username" name="username" type="text" autocomplete="username" placeholder="your.username or reg no" required />
+              <i data-lucide="user" class="input-icon" aria-hidden="true"></i>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="password">Password</label>
+            <div class="input-wrap">
+              <input id="password" name="password" type="password" autocomplete="current-password" placeholder="Enter your password" required />
+              <button type="button" class="password-toggle" id="togglePassword" aria-label="Show password">
+                <i data-lucide="eye"></i>
+              </button>
+            </div>
+          </div>
+
+          <div class="form-row">
+            <label class="check">
+              <input type="checkbox" checked /> Keep me signed in
+            </label>
+            <span class="forgot" id="forgotLink">Forgot password?</span>
+          </div>
+
+          <div class="status" id="status" aria-live="polite"></div>
+          <button class="primary" type="submit" id="signIn">
+            <span id="btnText">Sign in to portal</span>
+            <span id="btnSpinner" class="spinner" style="display:none;"></span>
+          </button>
+        </form>
+
+        <div class="divider">or continue with</div>
+
+        <a href="#" class="sso" id="sso">
+          <i data-lucide="building-2"></i> Institute single sign-on
+        </a>
+
+        <p class="terms">
+          By continuing, you agree to Muhammad Education Institute's
+          <a href="#terms">acceptable use policy</a> and
+          <a href="#privacy">privacy notice</a>.
+        </p>
+      </div>
+    </section>
+  </main>
+
+  <!-- ===== HELP MODAL ===== -->
+  <div class="help-modal" id="helpModal" role="dialog" aria-modal="true" aria-label="Help and instructions">
+    <div class="help-modal-box">
+      <h2>How to access the own dashboard ...</h2>
+      <ul>
+        <li><strong>Registration number</strong> for students and teachers is assigned by the <strong>Admission Manager</strong></li>
+        <li><strong>Default password</strong> for every student and teacher is <strong>MESS</strong> (case sensitive).</li>
+        <li>After first login, <strong>change your password</strong> immediately (students, teachers.)</li>
+        <li><strong>Forgot password?</strong> Contact the <strong>Admission Manager</strong> to reset it.</li>
+        <li><strong>Admin</strong> uses the credentials provided by the institute.</li>
+      </ul>
+      <button class="close-help" id="closeHelp">Got it</button>
+    </div>
+  </div>
+
+  <!-- ===== LOGO PREVIEW MODAL with COUNTDOWN (3 seconds) ===== -->
+  <div class="logo-preview-modal" id="logoPreviewModal" role="dialog" aria-modal="true" aria-label="Logo preview">
+    <div class="logo-preview-box">
+      <img src="logo.png" alt="Muhammad Education Institute Logo - full view" />
+      <div class="countdown-badge" id="countdownBadge">3</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast" role="status"></div>
+
+  <!-- Lucide icons -->
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.383.0/dist/umd/lucide.min.js"></script>
+  <script src="index.js"></script>
+</body>
+</html>

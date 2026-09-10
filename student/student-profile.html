@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – My Profile | Student Details</title>
+   <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../profile.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <div class="app-container">
+      <main class="main-panel">
+        <div class="page-header">
+          <h1><i class="fas fa-id-card"></i> Student Profile</h1>
+        </div>
+
+        <div class="dashboard-content">
+          <!-- LEFT COLUMN -->
+          <div class="left-column">
+
+            <!-- Personal Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-user" style="color: var(--primary);"></i>
+                <h2>Personal Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Student Name</div>
+                  <div class="info-value" id="studentName">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Father Name</div>
+                  <div class="info-value" id="fatherName">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Phone</div>
+                  <div class="info-value" id="phoneNumber">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">CNIC</div>
+                  <div class="info-value" id="cnic">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Address</div>
+                  <div class="info-value" id="address">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Email</div>
+                  <div class="info-value" id="email">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Gender</div>
+                  <div class="info-value" id="gender">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Date of Birth</div>
+                  <div class="info-value" id="dob">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Nationality</div>
+                  <div class="info-value" id="nationality">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Religion</div>
+                  <div class="info-value" id="religion">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Guardian Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-user-shield" style="color: var(--primary);"></i>
+                <h2>Guardian Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Guardian Name</div>
+                  <div class="info-value" id="guardianName">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Relationship</div>
+                  <div class="info-value" id="guardianRelationship">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Guardian Phone</div>
+                  <div class="info-value" id="guardianPhone">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Guardian CNIC</div>
+                  <div class="info-value" id="guardianCnic">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Occupation</div>
+                  <div class="info-value" id="guardianOccupation">—</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="right-column">
+
+            <!-- Student Photo & Registration -->
+            <div class="card photo-card">
+              <div class="card-content">
+                <div class="photo-frame">
+                  <img id="studentPhoto" src="" alt="Student Photo">
+                </div>
+                <div class="reg-number-bold" id="regNumber">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- Class Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-chalkboard" style="color: var(--primary);"></i>
+                <h2>Class Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Class Name</div>
+                  <div class="info-value" id="className">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Class ID</div>
+                  <div class="info-value" id="classId">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Session</div>
+                  <div class="info-value" id="session">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Grade</div>
+                  <div class="info-value" id="grade">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Section</div>
+                  <div class="info-value" id="section">—</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Enrollment Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-circle-check" style="color: var(--primary);"></i>
+                <h2>Enrollment Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Joining Date</div>
+                  <div class="info-value" id="joiningDate">—</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Status</div>
+                  <div class="info-value">
+                    <span class="status-badge" id="statusBadge">—</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script src="student-profile.js"></script>
+</body>
+</html>

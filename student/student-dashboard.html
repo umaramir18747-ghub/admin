@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – Student Dashboard</title>
+   <link rel="icon" type="image/png" href="../logo2.png">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <link rel="stylesheet" href="../dashboard.css">
+</head>
+<body>
+
+  <!-- Header placeholder -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- Sidebar placeholder -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="main-panel">
+      <!-- Watermark Logo (same as admission) -->
+      <div class="watermark" aria-hidden="true"></div>
+
+      <!-- ====== Welcome Banner + Profile Photo (exactly same structure as admission) ====== -->
+      <div class="welcome-photo-row">
+        <!-- Welcome Banner (greeting + quick links) – identical layout -->
+        <section class="welcome-banner">
+          <h1 class="welcome-title">Welcome Back, <span>Muhammad Umar</span></h1>
+          <div class="welcome-role">Student Dashboard</div>
+          <p class="welcome-text">View your subjects, attendance, exam results, and download slips — all from your personal student portal.</p>
+
+          <!-- Quick links grid (4 items, same style as admission) -->
+          <div class="quick-links-grid">
+            <a href="student-subjects.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-admissions"><i class="fas fa-book-open"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Subjects</div>
+                <div class="quick-link-subtitle">My courses</div>
+              </div>
+            </a>
+            <a href="view-attendance.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-students"><i class="fas fa-calendar-check"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Attendance</div>
+                <div class="quick-link-subtitle">View records</div>
+              </div>
+            </a>
+            <a href="student-results.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-fees"><i class="fas fa-medal"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Results</div>
+                <div class="quick-link-subtitle">Exam scores</div>
+              </div>
+            </a>
+            <a href="student-slip.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-reports"><i class="fas fa-table"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Timetable</div>
+                <div class="quick-link-subtitle">View Schedule</div>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- Divider (same as admission) -->
+        <div class="welcome-divider" aria-hidden="true"></div>
+
+        <!-- Profile Picture Frame (exactly same as admission) -->
+        <!-- Profile Picture Frame -->
+        <section class="profile-card">
+  <div class="passport-frame">
+    <img
+      src=""
+      alt="Muhammad Umar"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+
+    <div class="profile-fallback">
+      <i class="fa fa-user"></i>
+    </div>
+  </div>
+
+  <div class="profile-name">Student</div>
+  <div class="profile-role">Student</div>
+
+  <div class="profile-status">
+    <span class="status-dot"></span>Online
+  </div>
+</section>
+      </div>
+
+      <!-- ====== CARDS GRID – Student specific stats (same card style as admission) ====== -->
+      <div class="dashboard-section">
+        <div class="section-title"><i class="fas fa-graduation-cap"></i> Academic Overview</div>
+        <div class="cards-grid">
+          <!-- Card 1 -->
+          <div class="stat-card">
+            <div class="card-icon icon-students"><i class="fas fa-book"></i></div>
+            <div class="card-info"><div class="card-label">Subjects</div><div class="card-value">8</div></div>
+          </div>
+          <!-- Card 2 -->
+          <div class="stat-card">
+            <div class="card-icon icon-teachers"><i class="fas fa-user-graduate"></i></div>
+            <div class="card-info"><div class="card-label">Teachers</div><div class="card-value">6</div></div>
+          </div>
+          <!-- Card 3 -->
+          <div class="stat-card">
+            <div class="card-icon icon-classes"><i class="fas fa-coins"></i></div>
+            <div class="card-info"><div class="card-label">Fees</div><div class="card-value">2000 PKR</div></div>
+          </div>
+          <!-- Card 4 -->
+          <div class="stat-card">
+            <div class="card-icon icon-active-s"><i class="fas fa-percentage"></i></div>
+            <div class="card-info"><div class="card-label">Attendance</div><div class="card-value">92%</div></div>
+          </div>
+          <!-- Card 5 -->
+          <div class="stat-card">
+            <div class="card-icon icon-active-t"><i class="fas fa-bell"></i></div>
+            <div class="card-info"><div class="card-label">Notifications</div><div class="card-value">2</div></div>
+          </div>
+          <!-- Card 6 -->
+          <div class="stat-card">
+            <div class="card-icon icon-active-c"><i class="fas fa-pencil-alt"></i></div>
+            <div class="card-info"><div class="card-label">Assignments</div><div class="card-value">5</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ====== Help Section (exactly same as admission) ====== -->
+      <section class="help-section">
+        <div class="section-title"><i class="fas fa-circle-info"></i> Student Help & Guidance</div>
+        <p class="help-text">Easily <strong>view your subjects, attendance, exam results, and download slips</strong> — all from your personal student portal. Stay on top of homework and fee invoices.</p>
+        <p class="help-text">The student portal gives you real-time insight into your academic progress, attendance records, and upcoming exams. Complete transparency, total control over your learning journey.</p>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- components.js (assumed existing) -->
+  <script src="../components.js"></script>
+
+  <script>
+    // Load Header and Sidebar (same as admission)
+    function loadComponents() {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading header:', err));
+
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('sidebar-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    window.onload = function() {
+      if (!requireStudentSession()) return;
+
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+
+      populateStudentProfile();
+    };
+
+    // ===== Session Guard =====
+    function requireStudentSession() {
+      const stored = localStorage.getItem('messCurrentUser');
+      const session = stored ? JSON.parse(stored) : null;
+      if (!session || session.role !== 'student') {
+        window.location.href = 'login.html';
+        return false;
+      }
+      return true;
+    }
+
+    // ===== Storage Helpers =====
+    function loadFromStorage(key) {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    // ===== Populate real data into the existing dashboard elements =====
+    function populateStudentProfile() {
+      const session = JSON.parse(localStorage.getItem('messCurrentUser'));
+      const students = loadFromStorage('messStudents');
+      const student = students.find(s => s.regNo === session.regNo);
+      if (!student) return;
+
+      const nameSpan = document.querySelector('.welcome-title span');
+      if (nameSpan) nameSpan.textContent = student.studentName;
+
+      const profileName = document.querySelector('.profile-name');
+      if (profileName) profileName.textContent = student.studentName;
+
+      const profileImg = document.querySelector('.passport-frame img');
+      if (profileImg) {
+        if (student.photoUrl) {
+          profileImg.src = student.photoUrl;
+          profileImg.style.display = '';
+        } else {
+          profileImg.style.display = 'none';
+          const fallback = profileImg.nextElementSibling;
+          if (fallback) fallback.style.display = 'flex';
+        }
+      }
+
+      // Fees card: sum of this student's unpaid dues
+      const feeRecords = loadFromStorage('messFeeRecords');
+      const myUnpaid = feeRecords.filter(r => r.regNo === student.regNo && r.status === 'Unpaid');
+      const totalDue = myUnpaid.reduce((sum, r) => sum + (parseFloat(r.amount) || 0), 0);
+      document.querySelectorAll('.stat-card').forEach(card => {
+        const label = card.querySelector('.card-label');
+        if (label && label.textContent.trim() === 'Fees') {
+          const valueEl = card.querySelector('.card-value');
+          if (valueEl) valueEl.textContent = totalDue.toLocaleString() + ' PKR';
+        }
+      });
+
+      // ===== Other stat cards (Fees card is intentionally left untouched above) =====
+      const mySubjects = loadFromStorage('messSubjects').filter(s => s.classId === student.classId);
+      const distinctTeachers = new Set(mySubjects.map(s => s.teacherRegNo));
+
+      const myAttendance = loadFromStorage('messAttendanceRecords').filter(r => r.regNo === student.regNo);
+      const presentCount = myAttendance.filter(r => r.status === 'Present').length;
+      const attendancePct = myAttendance.length > 0 ? Math.round((presentCount / myAttendance.length) * 100) : 0;
+
+      const notificationsCount = loadFromStorage('messNotifications').length;
+      const myAssignments = loadFromStorage('messAssignments').filter(a => a.classId === student.classId);
+
+      document.querySelectorAll('.stat-card').forEach(card => {
+        const label = card.querySelector('.card-label');
+        if (!label) return;
+        const text = label.textContent.trim();
+        const valueEl = card.querySelector('.card-value');
+        if (!valueEl) return;
+        if (text === 'Subjects') valueEl.textContent = mySubjects.length;
+        else if (text === 'Teachers') valueEl.textContent = distinctTeachers.size;
+        else if (text === 'Attendance') valueEl.textContent = myAttendance.length > 0 ? attendancePct + '%' : '—';
+        else if (text === 'Notifications') valueEl.textContent = notificationsCount;
+        else if (text === 'Assignments') valueEl.textContent = myAssignments.length;
+      });
+    }
+  </script>
+
+</body>
+</html>

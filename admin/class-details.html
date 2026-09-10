@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – Class Management | Professional Details Panel</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="view-details.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+</head>
+<body>
+    <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Main Content -->
+<div class="app-container">
+  <main class="main-panel">
+    <!-- identical header design from student-details -->
+    <div class="page-header">
+      <h1><i class="fas fa-chalkboard"></i> Class Directory & Records</h1>
+      <p>Manage class sessions, monitor student enrollment, and view detailed class profiles.</p>
+    </div>
+    <div class="data-card">
+      <div class="card-header">
+        <h2><i class="fas fa-table-list"></i> All Classes <span class="badge-count" id="classCountBadge">0</span></h2>
+        <div class="search-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="classSearchInput" placeholder="Search by class name or ID..." class="search-input">
+          <button class="search-clear-btn" id="clearSearchBtn" style="display: none;"><i class="fas fa-times-circle"></i></button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Class Name</th>
+              <th>Class ID</th>
+              <th>Session</th>
+              <th>Grade</th>
+              <th>Section</th>
+              <th>Students</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="classTableBody"></tbody>
+        </table>
+      </div>
+      <!-- No results message -->
+      <div id="noResultsMessage" style="display: none; text-align: center; padding: 40px 20px; color: #64748b;">
+        <i class="fas fa-search" style="font-size: 32px; display: block; margin-bottom: 12px; color: #94a3b8;"></i>
+        <p style="font-size: 16px; font-weight: 500; color: #1e293b;">No classes found</p>
+        <p style="font-size: 14px;">Try adjusting your search terms</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL overlay for class detail view -->
+<div id="classModalOverlay" class="modal-overlay">
+  <div class="class-modal-container">
+    <div class="modal-header-custom">
+      <h2 id="modalClassTitle"><i class="fas fa-id-card"></i> Class Profile</h2>
+      <button class="close-modal-btn" id="closeModalBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="classModalDynamicContent"></div>
+    <div class="modal-footer-custom">
+      <button id="modalFooterCloseBtn" style="background:#f1f5f9; border:1px solid #cbd5e1; padding: 8px 20px; font-weight:600; cursor:pointer;"><i class="fas fa-times"></i> Close</button>
+    </div>
+  </div>
+</div>
+<script src="../components.js"></script>
+<script>
+    // Load Header and Sidebar
+    function loadComponents() {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => document.getElementById('header-placeholder').innerHTML = data)
+        .catch(err => console.error('Error loading header:', err));
+
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => document.getElementById('sidebar-placeholder').innerHTML = data)
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    window.onload = function() {
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+    };
+
+  // ===== Storage Helpers =====
+  function loadClassesFromStorage() {
+    const stored = localStorage.getItem('messClasses');
+    return stored ? JSON.parse(stored) : [];
+  }
+  function saveClassesToStorage(data) {
+    localStorage.setItem('messClasses', JSON.stringify(data));
+  }
+  function loadStudentsFromStorage() {
+    const stored = localStorage.getItem('messStudents');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  // Build the "classes" view model: each class + its enrolled students (from messStudents)
+  function buildClassesViewModel() {
+    const rawClasses = loadClassesFromStorage();
+    const allStudents = loadStudentsFromStorage();
+    return rawClasses.map(c => {
+      const studentsInClass = allStudents
+        .filter(s => s.classId === c.id)
+        .map(s => ({
+          photo: s.photoUrl || null,
+          name: s.studentName,
+          id: s.regNo,
+          fatherName: s.fatherName,
+          phone: s.phone || s.phoneNumber || ''
+        }));
+      return { ...c, students: studentsInClass };
+    });
+  }
+
+  let classes = buildClassesViewModel();
+  let filteredClasses = [...classes]; // For search filtering
+
+  function showToast(msg) {
+    let t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  function updateClassCount() {
+    document.getElementById('classCountBadge').innerText = filteredClasses.length;
+  }
+
+  function renderClassTable(dataToRender = filteredClasses) {
+    const tbody = document.getElementById('classTableBody');
+    const noResults = document.getElementById('noResultsMessage');
+    if (!tbody) return;
+    
+    if (dataToRender.length === 0) {
+      tbody.innerHTML = '';
+      noResults.style.display = 'block';
+      document.getElementById('classCountBadge').innerText = '0';
+      return;
+    }
+    
+    noResults.style.display = 'none';
+    
+    tbody.innerHTML = dataToRender.map(c => {
+      const studentCount = c.students?.length || 0;
+      const statusClass = c.status === 'Active' ? 'active-select' : 'graduated-select';
+      return `
+        <tr>
+          <td><strong>${escapeHtml(c.name)}</strong></td>
+          <td>${escapeHtml(c.id)}</td>
+          <td>${escapeHtml(c.session)}</td>
+          <td>${escapeHtml(c.grade)}</td>
+          <td>${escapeHtml(c.section)}</td>
+          <td><span class="student-count-badge"><i class="fas fa-user-friends"></i> ${studentCount} ${studentCount === 1 ? 'Student' : 'Students'}</span></td>
+          <td>
+            <select class="status-select ${statusClass}" data-classid="${c.id}" onchange="updateClassStatus('${c.id}', this.value)">
+              <option value="Active" ${c.status === 'Active' ? 'selected' : ''}>Active</option>
+              <option value="Graduated" ${c.status === 'Graduated' ? 'selected' : ''}>Graduated</option>
+            </select>
+          </td>
+          <td style="text-align: right">
+            <div class="action-icons">
+              <i class="fas fa-eye view-icon" data-classid="${c.id}" title="View Details"></i>
+              <i class="fas fa-edit edit-icon" data-classid="${c.id}" title="Edit Class"></i>
+              <i class="fas fa-trash-alt delete-icon" data-classid="${c.id}" title="Delete Class"></i>
+              <i class="fas fa-arrow-up promote-icon" data-classid="${c.id}" title="Promote (demo only)"></i>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Attach event listeners
+    document.querySelectorAll('.view-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openClassDetailPanel(icon.dataset.classid);
+      });
+    });
+    document.querySelectorAll('.edit-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        editClassById(icon.dataset.classid);
+      });
+    });
+    document.querySelectorAll('.delete-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteClassById(icon.dataset.classid);
+      });
+    });
+    document.querySelectorAll('.promote-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        showToast(`✨ Promote action (placeholder icon only)`);
+      });
+    });
+    
+    updateClassCount();
+  }
+
+  // ===== SEARCH FUNCTIONALITY =====
+  function filterClasses(searchTerm) {
+    const term = searchTerm.toLowerCase().trim();
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (!term) {
+      filteredClasses = [...classes];
+      clearBtn.style.display = 'none';
+    } else {
+      filteredClasses = classes.filter(c => 
+        c.name.toLowerCase().includes(term) || 
+        c.id.toLowerCase().includes(term)
+      );
+      clearBtn.style.display = 'block';
+    }
+    
+    renderClassTable(filteredClasses);
+  }
+
+  // Setup search event listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('classSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        filterClasses(this.value);
+      });
+      
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          this.value = '';
+          filterClasses('');
+          this.blur();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        if (searchInput) {
+          searchInput.value = '';
+          filterClasses('');
+          searchInput.focus();
+        }
+      });
+    }
+  });
+
+  window.updateClassStatus = (classId, newStatus) => {
+    const cls = classes.find(c => c.id === classId);
+    if (cls) {
+      cls.status = newStatus;
+      persistClasses();
+      // Rebuild filtered list to reflect changes
+      const searchInput = document.getElementById('classSearchInput');
+      filterClasses(searchInput ? searchInput.value : '');
+      showToast(`✅ Class status updated to ${newStatus}`);
+    }
+  };
+
+  // Persist current in-memory "classes" (minus the derived students array) back to storage
+  function persistClasses() {
+    const stripped = classes.map(({ students, ...rest }) => rest);
+    saveClassesToStorage(stripped);
+  }
+
+  function editClassById(classId) {
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+    let newName = prompt("Edit Class Name:", cls.name);
+    if (newName && newName.trim()) cls.name = newName.trim();
+    let newGrade = prompt("Edit Grade:", cls.grade);
+    if (newGrade && newGrade.trim()) cls.grade = newGrade.trim();
+    let newSection = prompt("Edit Section:", cls.section);
+    if (newSection && newSection.trim()) cls.section = newSection.trim();
+    let newSession = prompt("Edit Session:", cls.session);
+    if (newSession && newSession.trim()) cls.session = newSession.trim();
+    persistClasses();
+    // Rebuild filtered list to reflect changes
+    const searchInput = document.getElementById('classSearchInput');
+    filterClasses(searchInput ? searchInput.value : '');
+    showToast(`✏️ Class ${cls.id} updated`);
+  }
+
+  function deleteClassById(classId) {
+    if (confirm(`⚠️ Delete class ${classId}? This action cannot be undone.`)) {
+      classes = classes.filter(c => c.id !== classId);
+      persistClasses();
+      const searchInput = document.getElementById('classSearchInput');
+      filterClasses(searchInput ? searchInput.value : '');
+      showToast(`🗑️ Class ${classId} deleted`);
+    }
+  }
+
+  function escapeHtml(str) { 
+    if (!str) return ''; 
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
+  }
+
+  function openClassDetailPanel(classId) {
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+    const studentsList = cls.students || [];
+    const studentsHtml = studentsList.map(s => {
+      const photoHtml = s.photo ? `<img src="${s.photo}" class="student-img-class" alt="student">` : `<div class="placeholder-icon-class"><i class="fas fa-user-graduate"></i></div>`;
+      return `
+        <div class="student-card-class">
+          <div class="photo-frame-class">${photoHtml}</div>
+          <div class="student-name-class">${escapeHtml(s.name)}</div>
+          <div class="student-id-class">${escapeHtml(s.id)}</div>
+          <div style="font-size:12px; color:#475569; margin-top:6px;">${escapeHtml(s.fatherName || '—')}</div>
+          <div style="font-size:11px; color:#64748b;">${escapeHtml(s.phone || '')}</div>
+        </div>
+      `;
+    }).join('');
+
+    const statusBadgeClass = cls.status === 'Active' ? 'status-active' : 'status-graduated';
+    const modalContent = `
+      <div style="padding: 0;">
+        <div class="info-summary-grid">
+          <div class="info-summary-item"><strong><i class="fas fa-tag"></i> Class ID:</strong> <span>${escapeHtml(cls.id)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-calendar"></i> Session:</strong> <span>${escapeHtml(cls.session)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-chart-line"></i> Grade:</strong> <span>${escapeHtml(cls.grade)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-layer-group"></i> Section:</strong> <span>${escapeHtml(cls.section)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-users"></i> Total Students:</strong> <span><strong style="color:#2563eb;">${studentsList.length}</strong> enrolled</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-flag-checkered"></i> Status:</strong> <span><span class="status-badge ${statusBadgeClass}">${cls.status}</span></span></div>
+        </div>
+        <div style="border-top: 1px solid #eef2f8; padding: 20px 28px 8px 28px;">
+          <h4 style="display:flex; align-items:center; gap:10px; font-size:16px; font-weight:700; color:#1e293b;"><i class="fas fa-id-card"></i> Students — Official Photo Frame</h4>
+        </div>
+        <div class="student-grid-class">
+          ${studentsList.length ? studentsHtml : '<div style="grid-column:1/-1; text-align:center; padding:48px; color:#64748b;"><i class="fas fa-user-slash"></i> No students enrolled in this class</div>'}
+        </div>
+      </div>
+    `;
+    document.getElementById('classModalDynamicContent').innerHTML = modalContent;
+    document.getElementById('modalClassTitle').innerHTML = `<i class="fas fa-chalkboard-user"></i> ${escapeHtml(cls.name)}`;
+    document.getElementById('classModalOverlay').classList.add('active');
+  }
+
+  function closeClassModal() {
+    document.getElementById('classModalOverlay').classList.remove('active');
+  }
+
+  document.getElementById('closeModalBtn').addEventListener('click', closeClassModal);
+  document.getElementById('modalFooterCloseBtn').addEventListener('click', closeClassModal);
+  document.getElementById('classModalOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('classModalOverlay')) closeClassModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('classModalOverlay').classList.contains('active')) closeClassModal();
+  });
+
+  // Initial render
+  filteredClasses = [...classes];
+  renderClassTable();
+</script>
+</body>
+</html>
