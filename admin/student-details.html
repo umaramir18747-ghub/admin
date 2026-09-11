@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – Student Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="view-details.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+    <div class="app-container">
+      <main class="main-panel">
+        <div class="page-header">
+          <h1><i class="fas fa-user"></i> Student Records</h1>
+          <p>Manage enrollments, track academic status, and view detailed student profiles.</p>
+        </div>
+        <div class="data-card">
+          <div class="card-header">
+            <h2><i class="fas fa-table-list"></i> Enrolled Students <span class="badge-count" id="studentCountBadge">0</span></h2>
+            <div class="search-filters-wrapper">
+              <div class="filter-dropdown">
+                <select id="classFilter">
+                  <option value="">All Classes</option>
+                </select>
+              </div>
+              <div class="search-wrapper">
+                <i class="fas fa-search search-icon"></i>
+                <input type="text" id="studentSearchInput" placeholder="Search by name, reg no, or phone..." class="search-input">
+                <button class="search-clear-btn" id="clearSearchBtn" style="display: none;"><i class="fas fa-times-circle"></i></button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Photo</th>
+                  <th>Reg No.</th>
+                  <th>Student Name</th>
+                  <th>Father Name</th>
+                  <th>Class</th>
+                  <th>Phone</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="studentTableBody"></tbody>
+            </table>
+          </div>
+          
+          <div id="noResultsMessage" style="display: none; text-align: center; padding: 40px 20px; color: #64748b;">
+            <i class="fas fa-search" style="font-size: 32px; display: block; margin-bottom: 12px; color: #94a3b8;"></i>
+            <p style="font-size: 16px; font-weight: 500; color: #1e293b;">No students found</p>
+            <p style="font-size: 14px;">Try adjusting your search or filter criteria</p>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <div id="studentSlidePanel" class="student-overlay">
+    <div class="student-detail-panel">
+      <div class="panel-header">
+        <h2><i class="fas fa-id-card"></i> Student Profile</h2>
+        <button class="close-panel-btn" id="closeSlideBtn"><i class="fas fa-times"></i></button>
+      </div>
+      <div id="dynamicPanelContent"></div>
+    </div>
+  </div>
+
+<script src="../components.js"></script>
+<script>
+  function loadComponents() {
+    fetch('header.html').then(r => r.text()).then(data => document.getElementById('header-placeholder').innerHTML = data);
+    fetch('sidebar.html').then(r => r.text()).then(data => document.getElementById('sidebar-placeholder').innerHTML = data);
+  }
+
+  window.onload = function() {
+    loadComponents();
+    setTimeout(() => {
+      if (typeof window.initHeaderAndSidebar === 'function') window.initHeaderAndSidebar();
+    }, 400);
+
+    // Initial data load + render
+    refreshFromStorage();
+
+    // Re-render whenever the tab regains focus (e.g., after promoting a class or changing its status in another tab)
+    window.addEventListener('focus', refreshFromStorage);
+
+    // Re-render whenever the tab becomes visible again
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) refreshFromStorage();
+    });
+
+    // Also refresh when returning via browser back/forward navigation
+    window.addEventListener('pageshow', () => {
+      refreshFromStorage();
+    });
+  };
+
+  // ===== Storage Helpers =====
+  function loadStudentsFromStorage() {
+    const stored = localStorage.getItem('messStudents');
+    return stored ? JSON.parse(stored) : [];
+  }
+  function saveStudentsToStorage(data) {
+    localStorage.setItem('messStudents', JSON.stringify(data));
+  }
+  function loadClassesFromStorage() {
+    const stored = localStorage.getItem('messClasses');
+    return stored ? JSON.parse(stored) : [];
+  }
+
+  // ===== In-memory state =====
+  let students = [];
+  let filteredStudents = [];
+  let classStatusMap = {};   // classId -> 'Active' | 'Graduated'
+
+  // Build a fast lookup: classId -> class.status
+  function buildClassStatusMap() {
+    const classes = loadClassesFromStorage();
+    const map = {};
+    classes.forEach(c => {
+      if (c && c.id) map[c.id] = c.status || 'Active';
+    });
+    return map;
+  }
+
+  // ===== Refresh from localStorage and re-render everything =====
+  function refreshFromStorage() {
+    // Re-read the source of truth
+    students = loadStudentsFromStorage();
+    classStatusMap = buildClassStatusMap();
+
+    // Rebuild the class filter
+    populateClassFilter();
+
+    // Re-apply the current search/filter so the view stays consistent
+    filterStudents();
+  }
+
+  function showToast(msg) {
+    let t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  function updateStudentCount() {
+    document.getElementById('studentCountBadge').innerText = filteredStudents.length;
+  }
+
+  // ===== Populate Class Filter =====
+  function populateClassFilter() {
+    const classFilter = document.getElementById('classFilter');
+    const previousValue = classFilter.value;
+    const uniqueClasses = [...new Set(students.map(s => s.className).filter(Boolean))];
+    
+    classFilter.innerHTML = '<option value="">All Classes</option>';
+    
+    uniqueClasses.sort().forEach(className => {
+      const option = document.createElement('option');
+      option.value = className;
+      option.textContent = className;
+      classFilter.appendChild(option);
+    });
+
+    if (previousValue && uniqueClasses.includes(previousValue)) {
+      classFilter.value = previousValue;
+    }
+  }
+
+  // ===== SEARCH & FILTER FUNCTIONALITY =====
+  function filterStudents() {
+    const searchInput = document.getElementById('studentSearchInput');
+    const classFilter = document.getElementById('classFilter');
+    const searchTerm = searchInput ? searchInput.value.toLowerCase().trim() : '';
+    const selectedClass = classFilter ? classFilter.value : '';
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    filteredStudents = students.filter(student => {
+      if (selectedClass && student.className !== selectedClass) {
+        return false;
+      }
+      
+      if (searchTerm) {
+        const nameMatch = student.studentName && student.studentName.toLowerCase().includes(searchTerm);
+        const regMatch = student.regNo && student.regNo.toLowerCase().includes(searchTerm);
+        const phoneMatch = student.phoneNumber && student.phoneNumber.includes(searchTerm);
+        const fatherMatch = student.fatherName && student.fatherName.toLowerCase().includes(searchTerm);
+        
+        return nameMatch || regMatch || phoneMatch || fatherMatch;
+      }
+      
+      return true;
+    });
+    
+    if (clearBtn) {
+      clearBtn.style.display = searchTerm ? 'block' : 'none';
+    }
+    
+    renderStudentTable();
+    updateStudentCount();
+  }
+
+  // Setup search and filter event listeners
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('studentSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    const classFilter = document.getElementById('classFilter');
+    
+    populateClassFilter();
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        filterStudents();
+      });
+      
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          this.value = '';
+          filterStudents();
+          this.blur();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        if (searchInput) {
+          searchInput.value = '';
+          filterStudents();
+          searchInput.focus();
+        }
+      });
+    }
+    
+    if (classFilter) {
+      classFilter.addEventListener('change', filterStudents);
+    }
+  });
+
+  // ===== Helper: is this student's class Graduated? =====
+  function isClassGraduated(student) {
+    if (!student || !student.classId) return false;
+    return classStatusMap[student.classId] === 'Graduated';
+  }
+
+  function renderStudentTable() {
+    const tbody = document.getElementById('studentTableBody');
+    const noResults = document.getElementById('noResultsMessage');
+    if(!tbody) return;
+    
+    if (filteredStudents.length === 0) {
+      tbody.innerHTML = '';
+      noResults.style.display = 'block';
+      document.getElementById('studentCountBadge').innerText = '0';
+      return;
+    }
+    
+    noResults.style.display = 'none';
+    
+    tbody.innerHTML = filteredStudents.map(s => {
+      const photoHtml = s.photoUrl 
+        ? `<img src="${s.photoUrl}" class="photo-thumb" alt="${s.studentName}">` 
+        : `<div class="photo-placeholder"><i class="fas fa-user"></i></div>`;
+
+      // ===== Status cell: class-driven "Graduated" overrides student status =====
+      let statusHtml;
+      if (isClassGraduated(s)) {
+        // Static badge — cannot be changed from student side
+        statusHtml = `<span class="status-select graduated-select" style="display:inline-block; cursor:default; text-align:center;">Graduated</span>`;
+      } else {
+        statusHtml = `
+          <select class="status-select ${s.status === 'Active' ? 'active-select' : 'inactive-select'}" 
+                  data-regno="${s.regNo}" onchange="updateStatus('${s.regNo}', this.value)">
+            <option value="Active" ${s.status === 'Active' ? 'selected' : ''}>Active</option>
+            <option value="Inactive" ${s.status === 'Inactive' ? 'selected' : ''}>Inactive</option>
+          </select>
+        `;
+      }
+      
+      return `
+        <tr>
+          <td>${photoHtml}</td>
+          <td><strong>${escapeHtml(s.regNo)}</strong></td>
+          <td>${escapeHtml(s.studentName)}</td>
+          <td>${escapeHtml(s.fatherName)}</td>
+          <td>${escapeHtml(s.className)}</td>
+          <td>${escapeHtml(s.phoneNumber)}</td>
+          <td>${statusHtml}</td>
+          <td style="text-align:right">
+            <div class="action-icons">
+              <i class="fas fa-eye view-icon" data-regno="${s.regNo}"></i>
+              <i class="fas fa-edit edit-icon" data-regno="${s.regNo}"></i>
+              <i class="fas fa-trash-alt delete-icon" data-regno="${s.regNo}"></i>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    // Attach event listeners
+    document.querySelectorAll('.view-icon').forEach(i => i.addEventListener('click', () => openPanel(i.dataset.regno)));
+    document.querySelectorAll('.edit-icon').forEach(i => i.addEventListener('click', () => {
+      window.location.href = `enroll-student.html?edit=${encodeURIComponent(i.dataset.regno)}`;
+    }));
+    document.querySelectorAll('.delete-icon').forEach(i => i.addEventListener('click', () => { 
+      if(confirm(`Delete ${i.dataset.regno}?`)) { 
+        const fresh = loadStudentsFromStorage();
+        const remaining = fresh.filter(s => s.regNo !== i.dataset.regno);
+        saveStudentsToStorage(remaining);
+        refreshFromStorage();
+        showToast(`🗑️ Deleted`); 
+      } 
+    }));
+  }
+
+  function escapeHtml(str) { 
+    if (!str) return ''; 
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
+  }
+
+  window.updateStatus = (regNo, newStatus) => { 
+    // Block status changes if the student's class is Graduated
+    const fresh = loadStudentsFromStorage();
+    const s = fresh.find(s => s.regNo === regNo);
+    if (!s) return;
+
+    if (isClassGraduated(s)) {
+      showToast('⚠️ Status is locked (Class is Graduated)');
+      refreshFromStorage();
+      return;
+    }
+
+    s.status = newStatus; 
+    saveStudentsToStorage(fresh);
+    refreshFromStorage();
+    showToast(`✅ Status: ${newStatus}`); 
+  };
+
+  function openPanel(regNo) {
+    // Always re-read fresh so grade/class status are current
+    const freshStudents = loadStudentsFromStorage();
+    const freshClassStatusMap = buildClassStatusMap();
+    let s = freshStudents.find(s => s.regNo === regNo);
+    if(!s) return;
+
+    const classGraduated = s.classId && freshClassStatusMap[s.classId] === 'Graduated';
+    const effectiveStatus = classGraduated ? 'Graduated' : s.status;
+
+    let photoHtml = s.photoUrl ? `<img src="${s.photoUrl}">` : `<i class="fas fa-user"></i>`;
+
+    const val = (v) => (v !== undefined && v !== null && String(v).trim() !== '') ? escapeHtml(v) : '';
+    const fmtDate = (d) => {
+      if (!d) return '';
+      const dt = new Date(d);
+      return isNaN(dt.getTime()) ? '' : dt.toLocaleDateString();
+    };
+
+    // Status badge class
+    let statusBadgeClass = 'status-inactive';
+    if (effectiveStatus === 'Active') statusBadgeClass = 'status-active';
+    else if (effectiveStatus === 'Graduated') statusBadgeClass = 'status-graduated';
+
+    document.getElementById('dynamicPanelContent').innerHTML = `
+      <div class="photo-frame-section">
+        <div class="photo-frame">${photoHtml}</div>
+        <div class="reg-number-bold"> ${escapeHtml(s.regNo)}</div>
+      </div>
+      <div class="info-group"><h4><i class="fas fa-user"></i> Class Information</h4>
+        <div class="info-row"><div class="info-label">Class Name</div><div class="info-value">${val(s.className)}</div></div>
+        <div class="info-row"><div class="info-label">Class ID</div><div class="info-value">${val(s.classId)}</div></div>
+        <div class="info-row"><div class="info-label">Session</div><div class="info-value">${val(s.session)}</div></div>
+        <div class="info-row"><div class="info-label">Grade</div><div class="info-value">${val(s.grade)}</div></div>
+        <div class="info-row"><div class="info-label">Section</div><div class="info-value">${val(s.section)}</div></div>
+      </div>
+      <div class="info-group"><h4><i class="fas fa-address-card"></i> Personal Information</h4>
+        <div class="info-row"><div class="info-label">Student Name</div><div class="info-value">${val(s.studentName)}</div></div>
+        <div class="info-row"><div class="info-label">Father Name</div><div class="info-value">${val(s.fatherName)}</div></div>
+        <div class="info-row"><div class="info-label">Phone</div><div class="info-value">${val(s.phoneNumber)}</div></div>
+        <div class="info-row"><div class="info-label">CNIC</div><div class="info-value">${val(s.cnic)}</div></div>
+        <div class="info-row"><div class="info-label">Address</div><div class="info-value">${val(s.address)}</div></div>
+        <div class="info-row"><div class="info-label">Email</div><div class="info-value">${val(s.email)}</div></div>
+        <div class="info-row"><div class="info-label">Gender</div><div class="info-value">${val(s.gender)}</div></div>
+        <div class="info-row"><div class="info-label">DOB</div><div class="info-value">${fmtDate(s.dob)}</div></div>
+        <div class="info-row"><div class="info-label">Nationality</div><div class="info-value">${val(s.nationality)}</div></div>
+        <div class="info-row"><div class="info-label">Religion</div><div class="info-value">${val(s.religion)}</div></div>
+      </div>
+      <div class="info-group"><h4><i class="fas fa-user-shield"></i> Guardian Information</h4>
+        <div class="info-row"><div class="info-label">Guardian Name</div><div class="info-value">${val(s.guardianName)}</div></div>
+        <div class="info-row"><div class="info-label">Relationship</div><div class="info-value">${val(s.guardianRelationship)}</div></div>
+        <div class="info-row"><div class="info-label">Guardian Phone</div><div class="info-value">${val(s.guardianPhone)}</div></div>
+        <div class="info-row"><div class="info-label">Guardian CNIC</div><div class="info-value">${val(s.guardianCnic)}</div></div>
+        <div class="info-row"><div class="info-label">Occupation</div><div class="info-value">${val(s.guardianOccupation)}</div></div>
+      </div>
+      <div class="info-group"><h4><i class="fas fa-clock"></i> Enrollment Information</h4>
+        <div class="info-row"><div class="info-label">Joining Date</div><div class="info-value">${fmtDate(s.joiningDate)}</div></div>
+        <div class="info-row"><div class="info-label">Status</div><div class="info-value"><span class="status-badge ${statusBadgeClass}">${effectiveStatus}</span></div></div>
+      </div>
+    `;
+    document.getElementById('studentSlidePanel').classList.add('active');
+  }
+
+  function closePanel() { 
+    document.getElementById('studentSlidePanel').classList.remove('active'); 
+  }
+
+  document.getElementById('closeSlideBtn').addEventListener('click', closePanel);
+  document.getElementById('studentSlidePanel').addEventListener('click', (e) => { 
+    if(e.target === document.getElementById('studentSlidePanel')) closePanel(); 
+  });
+  document.addEventListener('keydown', (e) => { 
+    if(e.key === 'Escape' && document.getElementById('studentSlidePanel').classList.contains('active')) closePanel(); 
+  });
+</script>
+</body>
+</html>

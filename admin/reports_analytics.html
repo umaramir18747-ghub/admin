@@ -1,0 +1,938 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – Report & Analytics</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="view-details.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <style>
+    /* ========== Modern Analytics Dashboard (White Theme) ========== */
+    :root {
+      --card-bg: #ffffff;
+      --card-border: #e2e8f0;
+      --card-shadow: 0 1px 3px rgba(15, 23, 42, 0.06), 0 4px 12px rgba(15, 23, 42, 0.04);
+      --text-primary: #0f172a;
+      --text-secondary: #64748b;
+      --accent: #2563eb;
+      --radius: 14px;
+    }
+
+    .analytics-page {
+      background: #f8fafc;
+      min-height: 100%;
+    }
+
+    .page-header {
+      margin-bottom: 24px;
+    }
+    .page-header h1 {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      font-size: 1.55rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      margin: 0 0 6px;
+    }
+    .page-header p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    
+
+    /* Export bar */
+    .export-bar {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      padding: 16px 20px;
+      margin-bottom: 24px;
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+    }
+    .export-info h3 {
+      margin: 0 0 4px;
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .export-info p {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--text-secondary);
+    }
+    .export-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+    }
+    .btn-export {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 9px;
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s ease;
+    }
+    .btn-export.primary {
+      background: linear-gradient(135deg, #2563eb, #1d4ed8);
+      color: #fff;
+    }
+    .btn-export.primary:hover {
+      background: linear-gradient(135deg, #1d4ed8, #1e40af);
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    }
+    .btn-export.secondary {
+      background: #f1f5f9;
+      color: #334155;
+      border: 1px solid #cbd5e1;
+    }
+    .btn-export.secondary:hover { background: #e2e8f0; }
+
+    /* Charts grid – dashboard style */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 18px;
+      margin-bottom: 24px;
+    }
+    .dash-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .dash-card.span-4 { grid-column: span 4; }
+    .dash-card.span-6 { grid-column: span 6; }
+    .dash-card.span-8 { grid-column: span 8; }
+    .dash-card.span-12 { grid-column: span 12; }
+
+    .dash-card-header {
+      padding: 14px 18px 10px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .dash-card-header h3 {
+      margin: 0;
+      font-size: 0.9rem;
+      font-weight: 700;
+      color: var(--text-primary);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    .dash-card-header h3 i {
+      color: var(--accent);
+      font-size: 0.95rem;
+    }
+    .dash-card-body {
+      padding: 14px 16px 18px;
+      flex: 1;
+      position: relative;
+      min-height: 240px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .dash-card-body canvas {
+      width: 100% !important;
+      max-height: 260px;
+    }
+    .empty-state {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      color: #94a3b8;
+      font-size: 0.875rem;
+      height: 200px;
+    }
+    .empty-state i { font-size: 1.75rem; opacity: 0.7; }
+    .empty-state.show { display: flex; }
+
+    /* Summary tables */
+    .tables-row {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 18px;
+      margin-bottom: 20px;
+    }
+    .table-card {
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: var(--radius);
+      box-shadow: var(--card-shadow);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .table-card .dash-card-header {
+      background: #f8fafc;
+    }
+    .table-scroll {
+      max-height: 300px;
+      overflow-y: auto;
+      flex: 1;
+    }
+    .table-card table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 0.8125rem;
+    }
+    .table-card th,
+    .table-card td {
+      padding: 10px 14px;
+      text-align: left;
+      border-bottom: 1px solid #f1f5f9;
+    }
+    .table-card th {
+      background: #f8fafc;
+      font-weight: 600;
+      color: #475569;
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    .table-card tr:last-child td { border-bottom: none; }
+    .table-card td { color: #334155; }
+    .table-card tr:hover td { background: #f8fafc; }
+
+    .badge-sm {
+      display: inline-block;
+      padding: 2px 9px;
+      border-radius: 999px;
+      font-size: 0.7rem;
+      font-weight: 600;
+    }
+    .badge-active { background: #dcfce7; color: #166534; }
+    .badge-inactive { background: #fee2e2; color: #991b1b; }
+    .badge-graduated { background: #e0e7ff; color: #3730a3; }
+
+    .last-updated {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      text-align: right;
+      margin-top: 4px;
+    }
+
+    /* ========== Fully Responsive ========== */
+    @media (max-width: 1200px) {
+      
+      .dash-card.span-4 { grid-column: span 6; }
+      .dash-card.span-6 { grid-column: span 6; }
+      .dash-card.span-8 { grid-column: span 12; }
+      .tables-row { grid-template-columns: 1fr 1fr; }
+    }
+    @media (max-width: 900px) {
+      
+      .dashboard-grid { grid-template-columns: 1fr; }
+      .dash-card.span-4,
+      .dash-card.span-6,
+      .dash-card.span-8,
+      .dash-card.span-12 { grid-column: span 1; }
+      .tables-row { grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px) {
+      
+      .export-bar {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      .export-actions { width: 100%; }
+      .btn-export { flex: 1; justify-content: center; }
+      .kpi-value { font-size: 1.4rem; }
+      .page-header h1 { font-size: 1.3rem; }
+    }
+  </style>
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <div class="app-container">
+      <main class="main-panel analytics-page">
+        <div class="page-header">
+          <h1><i class="fas fa-chart-line"></i> Report & Analytics</h1>
+          <p>Live overview of classes, students and teachers — interactive charts & full Excel export.</p>
+        </div>
+
+        
+
+        <!-- Export Bar -->
+        <div class="export-bar">
+          <div class="export-info">
+            <h3><i class="fas fa-file-excel" style="color:#059669;"></i> Generate Full Report</h3>
+            <p>Excel workbook with 3 sheets → <strong>1. Students</strong> · <strong>2. Classes</strong> · <strong>3. Teachers</strong></p>
+          </div>
+          <div class="export-actions">
+            <button class="btn-export primary" id="btnExportExcel">
+              <i class="fas fa-download"></i> Download Excel (3 Sheets)
+            </button>
+            <button class="btn-export secondary" id="btnRefreshAnalytics">
+              <i class="fas fa-sync-alt"></i> Refresh
+            </button>
+          </div>
+        </div>
+        <div class="last-updated" id="lastUpdated"></div>
+
+        <!-- Dashboard Charts Grid -->
+        <div class="dashboard-grid">
+          <!-- Students by Gender -->
+          <div class="dash-card span-4">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-chart-pie"></i> Students by Gender</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartGender"></canvas>
+              <div class="empty-state" id="emptyGender"><i class="fas fa-chart-pie"></i><span>No student data</span></div>
+            </div>
+          </div>
+
+          <!-- Students per Class -->
+          <div class="dash-card span-8">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-chart-bar"></i> Students per Class</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartStudentsPerClass"></canvas>
+              <div class="empty-state" id="emptyStudentsPerClass"><i class="fas fa-chart-bar"></i><span>No class / student data</span></div>
+            </div>
+          </div>
+
+          <!-- Student Status -->
+          <div class="dash-card span-4">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-user-check"></i> Student Status</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartStudentStatus"></canvas>
+              <div class="empty-state" id="emptyStudentStatus"><i class="fas fa-chart-pie"></i><span>No student data</span></div>
+            </div>
+          </div>
+
+          <!-- Classes by Grade -->
+          <div class="dash-card span-4">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-layer-group"></i> Classes by Grade</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartClassesByGrade"></canvas>
+              <div class="empty-state" id="emptyClassesByGrade"><i class="fas fa-chart-bar"></i><span>No class data</span></div>
+            </div>
+          </div>
+
+          <!-- Teachers by Designation -->
+          <div class="dash-card span-4">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-user-tie"></i> Teachers by Designation</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartDesignation"></canvas>
+              <div class="empty-state" id="emptyDesignation"><i class="fas fa-chart-pie"></i><span>No teacher data</span></div>
+            </div>
+          </div>
+
+          <!-- Teacher Status -->
+          <div class="dash-card span-6">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-chalkboard-teacher"></i> Teachers by Status</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartTeacherStatus"></canvas>
+              <div class="empty-state" id="emptyTeacherStatus"><i class="fas fa-chart-bar"></i><span>No teacher data</span></div>
+            </div>
+          </div>
+
+          <!-- Class Status -->
+          <div class="dash-card span-6">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-flag"></i> Classes by Status</h3>
+            </div>
+            <div class="dash-card-body">
+              <canvas id="chartClassStatus"></canvas>
+              <div class="empty-state" id="emptyClassStatus"><i class="fas fa-chart-pie"></i><span>No class data</span></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Summary Tables -->
+        <div class="tables-row">
+          <div class="table-card">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-chalkboard"></i> Classes Overview</h3>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Class</th>
+                    <th>Grade</th>
+                    <th>Students</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tableClassesSummary"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-trophy"></i> Top Classes by Enrollment</h3>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    <th>Class Name</th>
+                    <th>Students</th>
+                  </tr>
+                </thead>
+                <tbody id="tableTopClasses"></tbody>
+              </table>
+            </div>
+          </div>
+
+          <div class="table-card">
+            <div class="dash-card-header">
+              <h3><i class="fas fa-chalkboard-teacher"></i> Teachers Snapshot</h3>
+            </div>
+            <div class="table-scroll">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th>Designation</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="tableTeachersSummary"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script>
+    // ===== Load Header & Sidebar =====
+    function loadComponents() {
+      fetch('header.html')
+        .then(r => r.text())
+        .then(d => document.getElementById('header-placeholder').innerHTML = d)
+        .catch(err => console.error('Error loading header:', err));
+      fetch('sidebar.html')
+        .then(r => r.text())
+        .then(d => document.getElementById('sidebar-placeholder').innerHTML = d)
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    window.onload = function() {
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+      refreshAllAnalytics();
+    };
+
+    // ===== Storage Helpers =====
+    function loadClasses() {
+      try {
+        const stored = localStorage.getItem('messClasses');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) { return []; }
+    }
+    function loadStudents() {
+      try {
+        const stored = localStorage.getItem('messStudents');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) { return []; }
+    }
+    function loadTeachers() {
+      try {
+        const stored = localStorage.getItem('messTeachers');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) { return []; }
+    }
+
+    function showToast(msg) {
+      const t = document.createElement('div');
+      t.className = 'toast-msg';
+      t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2600);
+    }
+
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str).replace(/[&<>"']/g, m =>
+        ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[m])
+      );
+    }
+
+    // Chart instances
+    let charts = {};
+
+    function destroyChart(key) {
+      if (charts[key]) {
+        charts[key].destroy();
+        charts[key] = null;
+      }
+    }
+
+    const palette = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#14b8a6', '#ec4899', '#6366f1', '#84cc16', '#f97316'];
+
+    // ===== KPIs =====
+    function renderKPIs(classes, students, teachers) {
+      const activeStudents = students.filter(s => s.status === 'Active').length;
+      const inactiveStudents = students.filter(s => s.status === 'Inactive').length;
+      const activeTeachers = teachers.filter(t => t.status === 'Active').length;
+      const activeClasses = classes.filter(c => c.status === 'Active').length;
+      const graduatedClasses = classes.filter(c => c.status === 'Graduated').length;
+
+      const kpis = [
+        { label: 'Total Students', value: students.length, sub: activeStudents + ' active', icon: 'fa-user-graduate', accent: '#2563eb' },
+        { label: 'Total Teachers', value: teachers.length, sub: activeTeachers + ' active', icon: 'fa-chalkboard-teacher', accent: '#10b981' },
+        { label: 'Total Classes', value: classes.length, sub: activeClasses + ' active', icon: 'fa-chalkboard', accent: '#8b5cf6' },
+        { label: 'Active Students', value: activeStudents, sub: inactiveStudents + ' inactive', icon: 'fa-user-check', accent: '#14b8a6' },
+        { label: 'Active Teachers', value: activeTeachers, sub: (teachers.length - activeTeachers) + ' inactive', icon: 'fa-user-tie', accent: '#f59e0b' },
+        { label: 'Active / Graduated', value: activeClasses + ' / ' + graduatedClasses, sub: 'class status', icon: 'fa-flag-checkered', accent: '#ef4444' }
+      ];
+
+      
+    }
+
+    // ===== Charts =====
+    function toggleEmpty(canvasId, emptyId, hasData) {
+      const canvas = document.getElementById(canvasId);
+      const empty = document.getElementById(emptyId);
+      if (!hasData) {
+        canvas.style.display = 'none';
+        empty.classList.add('show');
+      } else {
+        canvas.style.display = 'block';
+        empty.classList.remove('show');
+      }
+    }
+
+    function renderGenderChart(students) {
+      destroyChart('gender');
+      toggleEmpty('chartGender', 'emptyGender', students.length > 0);
+      if (!students.length) return;
+
+      const counts = {};
+      students.forEach(s => {
+        const g = s.gender || 'Not Specified';
+        counts[g] = (counts[g] || 0) + 1;
+      });
+      const labels = Object.keys(counts);
+      const data = Object.values(counts);
+
+      charts.gender = new Chart(document.getElementById('chartGender'), {
+        type: 'doughnut',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: palette.slice(0, labels.length),
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '58%',
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 11, padding: 14, font: { size: 12 } } }
+          }
+        }
+      });
+    }
+
+    function renderStudentsPerClassChart(classes, students) {
+      destroyChart('studentsPerClass');
+      toggleEmpty('chartStudentsPerClass', 'emptyStudentsPerClass', classes.length > 0);
+      if (!classes.length) return;
+
+      const labels = classes.map(c => c.name || c.id);
+      const data = classes.map(c => students.filter(s => s.classId === c.id).length);
+
+      charts.studentsPerClass = new Chart(document.getElementById('chartStudentsPerClass'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Students',
+            data,
+            backgroundColor: '#2563eb',
+            borderRadius: 7,
+            maxBarThickness: 48
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+            x: { ticks: { maxRotation: 40, minRotation: 0, font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderStudentStatusChart(students) {
+      destroyChart('studentStatus');
+      toggleEmpty('chartStudentStatus', 'emptyStudentStatus', students.length > 0);
+      if (!students.length) return;
+
+      const active = students.filter(s => s.status === 'Active').length;
+      const inactive = students.filter(s => s.status === 'Inactive').length;
+      const other = students.length - active - inactive;
+
+      charts.studentStatus = new Chart(document.getElementById('chartStudentStatus'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Inactive', 'Other'],
+          datasets: [{
+            data: [active, inactive, other],
+            backgroundColor: ['#10b981', '#ef4444', '#94a3b8'],
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '58%',
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 11, padding: 14, font: { size: 12 } } }
+          }
+        }
+      });
+    }
+
+    function renderClassesByGradeChart(classes) {
+      destroyChart('classesByGrade');
+      toggleEmpty('chartClassesByGrade', 'emptyClassesByGrade', classes.length > 0);
+      if (!classes.length) return;
+
+      const counts = {};
+      classes.forEach(c => {
+        const g = c.grade || 'Unknown';
+        counts[g] = (counts[g] || 0) + 1;
+      });
+      const labels = Object.keys(counts);
+      const data = Object.values(counts);
+
+      charts.classesByGrade = new Chart(document.getElementById('chartClassesByGrade'), {
+        type: 'bar',
+        data: {
+          labels,
+          datasets: [{
+            label: 'Classes',
+            data,
+            backgroundColor: '#8b5cf6',
+            borderRadius: 7,
+            maxBarThickness: 40
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+            x: { ticks: { font: { size: 11 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderDesignationChart(teachers) {
+      destroyChart('designation');
+      toggleEmpty('chartDesignation', 'emptyDesignation', teachers.length > 0);
+      if (!teachers.length) return;
+
+      const counts = {};
+      teachers.forEach(t => {
+        const d = t.designation || 'Not Specified';
+        counts[d] = (counts[d] || 0) + 1;
+      });
+      const labels = Object.keys(counts);
+      const data = Object.values(counts);
+
+      charts.designation = new Chart(document.getElementById('chartDesignation'), {
+        type: 'pie',
+        data: {
+          labels,
+          datasets: [{
+            data,
+            backgroundColor: palette.slice(0, labels.length),
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 11, padding: 14, font: { size: 12 } } }
+          }
+        }
+      });
+    }
+
+    function renderTeacherStatusChart(teachers) {
+      destroyChart('teacherStatus');
+      toggleEmpty('chartTeacherStatus', 'emptyTeacherStatus', teachers.length > 0);
+      if (!teachers.length) return;
+
+      const active = teachers.filter(t => t.status === 'Active').length;
+      const inactive = teachers.filter(t => t.status === 'Inactive').length;
+
+      charts.teacherStatus = new Chart(document.getElementById('chartTeacherStatus'), {
+        type: 'bar',
+        data: {
+          labels: ['Active', 'Inactive'],
+          datasets: [{
+            label: 'Teachers',
+            data: [active, inactive],
+            backgroundColor: ['#10b981', '#ef4444'],
+            borderRadius: 8,
+            maxBarThickness: 70
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          plugins: { legend: { display: false } },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1, font: { size: 11 } }, grid: { color: '#f1f5f9' } },
+            x: { ticks: { font: { size: 12 } }, grid: { display: false } }
+          }
+        }
+      });
+    }
+
+    function renderClassStatusChart(classes) {
+      destroyChart('classStatus');
+      toggleEmpty('chartClassStatus', 'emptyClassStatus', classes.length > 0);
+      if (!classes.length) return;
+
+      const active = classes.filter(c => c.status === 'Active').length;
+      const graduated = classes.filter(c => c.status === 'Graduated').length;
+      const other = classes.length - active - graduated;
+
+      charts.classStatus = new Chart(document.getElementById('chartClassStatus'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Graduated', 'Other'],
+          datasets: [{
+            data: [active, graduated, other],
+            backgroundColor: ['#2563eb', '#6366f1', '#94a3b8'],
+            borderWidth: 3,
+            borderColor: '#fff',
+            hoverOffset: 6
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: true,
+          cutout: '58%',
+          plugins: {
+            legend: { position: 'bottom', labels: { boxWidth: 11, padding: 14, font: { size: 12 } } }
+          }
+        }
+      });
+    }
+
+    // ===== Summary Tables =====
+    function renderSummaryTables(classes, students, teachers) {
+      const classRows = classes.map(c => {
+        const count = students.filter(s => s.classId === c.id).length;
+        const statusClass = c.status === 'Active' ? 'badge-active' : (c.status === 'Graduated' ? 'badge-graduated' : 'badge-inactive');
+        return `
+          <tr>
+            <td><strong>${escapeHtml(c.name)}</strong><br><small style="color:#94a3b8">${escapeHtml(c.id)}</small></td>
+            <td>${escapeHtml(c.grade)}${c.section && c.section !== '—' ? ' - ' + escapeHtml(c.section) : ''}</td>
+            <td>${count}</td>
+            <td><span class="badge-sm ${statusClass}">${escapeHtml(c.status || '—')}</span></td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:24px;">No classes yet</td></tr>';
+      document.getElementById('tableClassesSummary').innerHTML = classRows;
+
+      const ranked = classes
+        .map(c => ({ name: c.name, count: students.filter(s => s.classId === c.id).length }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 12);
+      const topRows = ranked.map((r, i) => `
+        <tr>
+          <td>${i + 1}</td>
+          <td>${escapeHtml(r.name)}</td>
+          <td><strong>${r.count}</strong></td>
+        </tr>
+      `).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:24px;">No data</td></tr>';
+      document.getElementById('tableTopClasses').innerHTML = topRows;
+
+      const teacherRows = teachers.slice(0, 15).map(t => {
+        const statusClass = t.status === 'Active' ? 'badge-active' : 'badge-inactive';
+        return `
+          <tr>
+            <td>${escapeHtml(t.teacherName)}</td>
+            <td>${escapeHtml(t.designation || '—')}</td>
+            <td><span class="badge-sm ${statusClass}">${escapeHtml(t.status || '—')}</span></td>
+          </tr>
+        `;
+      }).join('') || '<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:24px;">No teachers yet</td></tr>';
+      document.getElementById('tableTeachersSummary').innerHTML = teacherRows;
+    }
+
+    // ===== Main refresh =====
+    function refreshAllAnalytics() {
+      const classes = loadClasses();
+      const students = loadStudents();
+      const teachers = loadTeachers();
+
+      renderKPIs(classes, students, teachers);
+      renderGenderChart(students);
+      renderStudentsPerClassChart(classes, students);
+      renderStudentStatusChart(students);
+      renderClassesByGradeChart(classes);
+      renderDesignationChart(teachers);
+      renderTeacherStatusChart(teachers);
+      renderClassStatusChart(classes);
+      renderSummaryTables(classes, students, teachers);
+
+      document.getElementById('lastUpdated').textContent =
+        'Last updated: ' + new Date().toLocaleString();
+    }
+
+    // ===== Excel Export — Sheet order: 1 Students, 2 Classes, 3 Teachers =====
+    function exportToExcel() {
+      const classes = loadClasses();
+      const students = loadStudents();
+      const teachers = loadTeachers();
+
+      if (!classes.length && !students.length && !teachers.length) {
+        showToast('⚠️ No data available to export');
+        return;
+      }
+
+      // Sheet 1 — Students
+      const studentHeaders = [
+        'Reg No', 'Student Name', 'Father Name', 'Phone', 'CNIC', 'Email',
+        'Gender', 'Date of Birth', 'Nationality', 'Religion', 'Joining Date',
+        'Address', 'Guardian Name', 'Relationship', 'Guardian Phone',
+        'Guardian CNIC', 'Occupation', 'Class ID', 'Class Name', 'Session',
+        'Grade', 'Section', 'Status'
+      ];
+      const studentRows = students.map(s => [
+        s.regNo || '', s.studentName || '', s.fatherName || '',
+        s.phoneNumber || '', s.cnic || '', s.email || '',
+        s.gender || '', s.dob || '', s.nationality || '', s.religion || '',
+        s.joiningDate || '', s.address || '',
+        s.guardianName || '', s.guardianRelationship || '', s.guardianPhone || '',
+        s.guardianCnic || '', s.guardianOccupation || '',
+        s.classId || '', s.className || '', s.session || '',
+        s.grade || '', s.section || '', s.status || ''
+      ]);
+
+      // Sheet 2 — Classes
+      const classHeaders = [
+        'Class ID', 'Class Name', 'Session', 'Grade', 'Section',
+        'Description', 'Status', 'Total Students'
+      ];
+      const classRows = classes.map(c => {
+        const count = students.filter(s => s.classId === c.id).length;
+        return [
+          c.id || '', c.name || '', c.session || '', c.grade || '',
+          c.section || '', c.description || '', c.status || '', count
+        ];
+      });
+
+      // Sheet 3 — Teachers
+      const teacherHeaders = [
+        'Reg No', 'Teacher Name', 'S/O D/O W/O', 'Phone', 'CNIC', 'Email',
+        'Gender', 'Date of Birth', 'Nationality', 'Religion', 'Joining Date',
+        'Address', 'Qualification', 'Subject', 'Previous School', 'Experience',
+        'Designation', 'Status'
+      ];
+      const teacherRows = teachers.map(t => [
+        t.regNo || '', t.teacherName || '', t.fatherName || '',
+        t.phoneNumber || '', t.cnic || '', t.email || '',
+        t.gender || '', t.dob || '', t.nationality || '', t.religion || '',
+        t.joiningDate || '', t.address || '',
+        t.qualification || '', t.subjectsCanTeach || '', t.previousSchool || '',
+        t.experience || '', t.designation || '', t.status || ''
+      ]);
+
+      const wb = XLSX.utils.book_new();
+
+      const wsStudents = XLSX.utils.aoa_to_sheet([studentHeaders, ...studentRows]);
+      const wsClasses  = XLSX.utils.aoa_to_sheet([classHeaders, ...classRows]);
+      const wsTeachers = XLSX.utils.aoa_to_sheet([teacherHeaders, ...teacherRows]);
+
+      wsStudents['!cols'] = studentHeaders.map(() => ({ wch: 15 }));
+      wsClasses['!cols']  = classHeaders.map(() => ({ wch: 16 }));
+      wsTeachers['!cols'] = teacherHeaders.map(() => ({ wch: 16 }));
+
+      // Order: 1 Students, 2 Classes, 3 Teachers
+      XLSX.utils.book_append_sheet(wb, wsStudents, 'Students');
+      XLSX.utils.book_append_sheet(wb, wsClasses,  'Classes');
+      XLSX.utils.book_append_sheet(wb, wsTeachers, 'Teachers');
+
+      const fileName = `MEI_Full_Report_${new Date().toISOString().slice(0, 10)}.xlsx`;
+      XLSX.writeFile(wb, fileName);
+      showToast('✅ Excel report downloaded (Students → Classes → Teachers)');
+    }
+
+    document.getElementById('btnExportExcel').addEventListener('click', exportToExcel);
+    document.getElementById('btnRefreshAnalytics').addEventListener('click', () => {
+      refreshAllAnalytics();
+      showToast('🔄 Analytics refreshed');
+    });
+  </script>
+</body>
+</html>
