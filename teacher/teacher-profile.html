@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – Teacher Profile</title>
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../profile.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <div class="app-container">
+      <main class="main-panel">
+        <div class="page-header">
+          <h1><i class="fas fa-chalkboard-teacher"></i> Teacher Profile</h1>
+        </div>
+
+        <div class="dashboard-content">
+          <!-- LEFT COLUMN -->
+          <div class="left-column">
+
+            <!-- Personal Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-user-graduate" style="color: var(--primary);"></i>
+                <h2>Personal Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Teacher Name</div>
+                  <div class="info-value" id="teacherName"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">S/O, D/O, W/O</div>
+                  <div class="info-value" id="fatherName"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Phone</div>
+                  <div class="info-value" id="phoneNumber"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">CNIC</div>
+                  <div class="info-value" id="cnic"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Address</div>
+                  <div class="info-value" id="address"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Email</div>
+                  <div class="info-value" id="email"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Gender</div>
+                  <div class="info-value" id="gender"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Date of Birth</div>
+                  <div class="info-value" id="dob"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Nationality</div>
+                  <div class="info-value" id="nationality"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Religion</div>
+                  <div class="info-value" id="religion"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Professional Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-graduation-cap" style="color: var(--primary);"></i>
+                <h2>Professional Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Qualification</div>
+                  <div class="info-value" id="qualification"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Subjects</div>
+                  <div class="info-value">
+                    <div class="subjects-tags" id="subjectsTags"></div>
+                  </div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Previous School</div>
+                  <div class="info-value" id="previousSchool"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Experience</div>
+                  <div class="info-value" id="experience"></div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="right-column">
+
+            <!-- Teacher Photo & Registration -->
+            <div class="card photo-card">
+              <div class="card-content">
+                <div class="photo-frame">
+                  <img id="teacherPhoto" src="" alt="Teacher Photo">
+                </div>
+                <div class="reg-number-bold" id="regNumber">
+                  
+                </div>
+              </div>
+            </div>
+
+            <!-- Employment Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-briefcase" style="color: var(--primary);"></i>
+                <h2>Employment Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Designation</div>
+                  <div class="info-value" id="designation"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Joining Date</div>
+                  <div class="info-value" id="joiningDate"></div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Status</div>
+                  <div class="info-value">
+                    <span class="status-badge" id="statusBadge"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script>
+  (function() {
+    'use strict';
+
+    // ===== Session Guard =====
+    function requireTeacherSession() {
+      const stored = localStorage.getItem('messCurrentUser');
+      const session = stored ? JSON.parse(stored) : null;
+      if (!session || session.role !== 'teacher') {
+        window.location.href = 'login.html';
+        return false;
+      }
+      return true;
+    }
+
+    // ===== Storage Helpers =====
+    function loadFromStorage(key) {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    // ===== Helper: format date (returns '' if empty) =====
+    function formatDateLong(dateStr) {
+      if (!dateStr) return '';
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return dateStr;
+      const months = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+      return `${String(d.getDate()).padStart(2, '0')} ${months[d.getMonth()]} ${d.getFullYear()}`;
+    }
+
+    // ===== Helper: set text content (empty if no value) =====
+    function setText(id, value) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (value === undefined || value === null) {
+        el.textContent = '';
+      } else {
+        el.textContent = String(value);
+      }
+    }
+
+    // ===== Helper: format experience as "N Years +" (or blank if empty) =====
+    function formatExperience(v) {
+      if (v === undefined || v === null || String(v).trim() === '') return '';
+      const num = String(v).replace(/[^\d]/g, '');
+      if (num === '') return '';
+      return `${num} Years +`;
+    }
+
+    // ===== Populate profile =====
+    function populateTeacherProfile() {
+      const session = JSON.parse(localStorage.getItem('messCurrentUser'));
+      const teachers = loadFromStorage('messTeachers');
+      const teacher = teachers.find(t => t.regNo === session.regNo);
+      if (!teacher) return;
+
+      document.title = `EHS – Teacher Profile | ${teacher.teacherName || 'Teacher'}`;
+
+      // Personal Information
+      setText('teacherName', teacher.teacherName);
+      setText('fatherName', teacher.fatherName);
+      setText('phoneNumber', teacher.phoneNumber);
+      setText('cnic', teacher.cnic);
+      setText('address', teacher.address);
+      setText('email', teacher.email);
+      setText('gender', teacher.gender);
+      setText('dob', formatDateLong(teacher.dob));
+      setText('nationality', teacher.nationality);
+      setText('religion', teacher.religion);
+
+      // Professional Information
+      setText('qualification', teacher.qualification);
+      setText('previousSchool', teacher.previousSchool);
+      setText('experience', formatExperience(teacher.experience));
+
+      // Subjects - tags (blank container if none)
+      const subjectsContainer = document.getElementById('subjectsTags');
+      if (subjectsContainer) {
+        const subjects = (teacher.subjectsCanTeach || '')
+          .split(',')
+          .map(s => s.trim())
+          .filter(Boolean);
+
+        if (subjects.length === 0) {
+          subjectsContainer.innerHTML = '';
+        } else {
+          subjectsContainer.innerHTML = subjects
+            .map(sub => `<span class="subjects-tag">${sub}</span>`)
+            .join('');
+        }
+      }
+
+      // Employment Information
+      setText('designation', teacher.designation);
+      setText('joiningDate', formatDateLong(teacher.joiningDate));
+
+      // Status badge
+      const statusBadge = document.getElementById('statusBadge');
+      if (statusBadge) {
+        const status = teacher.status || 'Active';
+        statusBadge.textContent = status;
+        if (status.toLowerCase() === 'active') {
+          statusBadge.style.background = '#d1fae5';
+          statusBadge.style.color = '#166534';
+        } else if (status.toLowerCase() === 'inactive') {
+          statusBadge.style.background = '#fee2e2';
+          statusBadge.style.color = '#991b1b';
+        } else {
+          statusBadge.style.background = '#fef3c7';
+          statusBadge.style.color = '#92400e';
+        }
+      }
+
+      // Photo
+      const photoImg = document.getElementById('teacherPhoto');
+      if (photoImg) {
+        if (teacher.photoUrl) {
+          photoImg.src = teacher.photoUrl;
+          photoImg.alt = teacher.teacherName || 'Teacher Photo';
+          photoImg.style.display = 'block';
+          const placeholder = photoImg.parentElement.querySelector('.photo-placeholder');
+          if (placeholder) placeholder.remove();
+        } else {
+          photoImg.style.display = 'none';
+          const frame = photoImg.parentElement;
+          let placeholder = frame.querySelector('.photo-placeholder');
+          if (!placeholder) {
+            placeholder = document.createElement('div');
+            placeholder.className = 'photo-placeholder';
+            placeholder.innerHTML = '<i class="fas fa-user-graduate"></i>';
+            frame.appendChild(placeholder);
+          }
+        }
+      }
+
+      // Registration Number
+      const regNumber = document.getElementById('regNumber');
+      if (regNumber) {
+        regNumber.innerHTML = teacher.regNo ? String(teacher.regNo) : '';
+      }
+    }
+
+    // ===== Load components (header/sidebar) =====
+    function loadComponents() {
+      fetch('header.html')
+        .then(r => r.text())
+        .then(data => {
+          const headerEl = document.getElementById('header-placeholder');
+          if (headerEl) headerEl.innerHTML = data;
+        })
+        .catch(() => console.log("Header loaded (simulated)"));
+
+      fetch('sidebar.html')
+        .then(r => r.text())
+        .then(data => {
+          const sidebarEl = document.getElementById('sidebar-placeholder');
+          if (sidebarEl) sidebarEl.innerHTML = data;
+        })
+        .catch(() => console.log("Sidebar loaded (simulated)"));
+    }
+
+    // ===== onload =====
+    window.onload = function() {
+      if (!requireTeacherSession()) return;
+
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 500);
+
+      populateTeacherProfile();
+
+      // Re-populate if user switches back to this tab
+      window.addEventListener('focus', populateTeacherProfile);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) populateTeacherProfile();
+      });
+      window.addEventListener('pageshow', populateTeacherProfile);
+    };
+
+  })();
+  </script>
+</body>
+</html>

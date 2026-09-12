@@ -1,0 +1,442 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – Create Class</title>
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+ 
+  <link rel="stylesheet" href="enroll.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Main Content -->
+  <main class="main-panel">
+    <div class="page-header">
+      <div class="header-content">
+        <h1><i class="fas fa-chalkboard icon"></i><span id="pageTitleText">Make a Class</span></h1>
+        <p id="pageSubtitle">Create a new class session with complete details — straight-edge professional panel.</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title">
+        <i class="fas fa-info-circle"></i> Class Information
+        <span id="editLockNotice" class="lock-notice">
+          <i class="fas fa-lock"></i> Only Grade can be changed
+        </span>
+      </div>
+      
+      <form id="classForm">
+        <div class="form-grid-2cols">
+          <div class="form-group">
+            <label><i class="fas fa-chalkboard"></i> Class Name <span class="req">*</span></label>
+            <input type="text" class="form-control" id="className" placeholder="e.g. Morning Class A" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-id-card"></i> Class ID <span class="req">*</span></label>
+            <input type="text" class="form-control" id="classId" placeholder="Auto-generated based on class name" readonly>
+            <div class="class-id-preview" id="classIdPreview" style="display:none;">
+              <i class="fas fa-info-circle"></i> <span id="previewText">Class ID will be generated automatically</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="form-grid-3cols">
+          <div class="form-group">
+            <label><i class="fas fa-calendar-alt"></i> Session <span class="req">*</span></label>
+            <input type="text" class="form-control" id="session" placeholder="XXXX-XXXX" maxlength="9" inputmode="numeric" required>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-layer-group"></i> Grade <span class="req">*</span></label>
+            <select class="form-control" id="grade" required>
+              <option value="">-- Select Grade --</option>
+              <option>Pre-Nursery</option>
+              <option>Nursery</option>
+              <option>Post-Nursery</option>
+              <option>Grade 1</option>
+              <option>Grade 2</option>
+              <option>Grade 3</option>
+              <option>Grade 4</option>
+              <option>Grade 5</option>
+              <option>Grade 6</option>
+              <option>Grade 7</option>
+              <option>Grade 8</option>
+              <option>Pre 9th</option>
+              <option>Grade 9</option>
+              <option>Grade 10</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label><i class="fas fa-tags"></i> Section <span class="req">*</span></label>
+            <input type="text" class="form-control" id="section" placeholder="e.g. A, B, C" required>
+          </div>
+        </div>
+
+        <div class="form-grid-full">
+          <div class="form-group">
+            <label><i class="fas fa-align-left"></i> Description <span style="color:#64748b;font-weight:400;">(Optional)</span></label>
+            <textarea class="form-control" id="description" rows="4" placeholder="Any additional notes about this class..."></textarea>
+          </div>
+        </div>
+
+        <div class="btn-actions">
+          <button type="submit" class="btn btn-primary" id="submitBtn">
+            <i class="fas fa-save"></i> Save Class
+          </button>
+          <button type="button" class="btn btn-secondary" onclick="resetForm()">
+            <i class="fas fa-undo"></i> Reset
+          </button>
+          <a href="class-details.html" class="btn btn-secondary">
+            <i class="fas fa-eye"></i> View Details
+          </a>
+          <a href="index.html" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> Back to Dashboard
+          </a>
+        </div>
+      </form>
+    </div>
+  </main>
+<script src="../components.js"></script>
+  <script>
+    let editingClassId = null;   // null = create mode, otherwise promote/edit mode
+
+    // Load Header and Sidebar
+    function loadComponents() {
+      // Load Header
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading header:', err));
+
+      // Load Sidebar
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('sidebar-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    // Initialize everything after components are loaded
+    window.onload = function() {
+      loadComponents();
+      
+      // Give time for HTML to load then initialize JS
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+
+      // Attach session input formatter
+      attachSessionFormatter();
+
+      // Check for promote/edit mode via URL param
+      const params = new URLSearchParams(window.location.search);
+      const editId = params.get('edit');
+      if (editId) {
+        enterEditMode(editId);
+      }
+    };
+
+    function resetForm(){
+      // In promote mode, "Reset" cancels and goes back
+      if (editingClassId) {
+        window.location.href = 'class-details.html';
+        return;
+      }
+
+      document.getElementById('classForm').reset();
+      document.getElementById('classId').value = '';
+      document.getElementById('classIdPreview').style.display = 'none';
+    }
+
+    // ===== Storage Helpers =====
+    function loadClasses() {
+      const stored = localStorage.getItem('messClasses');
+      return stored ? JSON.parse(stored) : [];
+    }
+    function saveClasses(classes) {
+      localStorage.setItem('messClasses', JSON.stringify(classes));
+    }
+    function loadStudents() {
+      const stored = localStorage.getItem('messStudents');
+      return stored ? JSON.parse(stored) : [];
+    }
+    function saveStudents(students) {
+      localStorage.setItem('messStudents', JSON.stringify(students));
+    }
+
+    function showToast(msg) {
+      let t = document.createElement('div');
+      t.className = 'toast-msg';
+      t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2400);
+    }
+
+    // ===== Auto-generate Class ID =====
+    const classNameInput = document.getElementById('className');
+    const classIdInput = document.getElementById('classId');
+    const classIdPreview = document.getElementById('classIdPreview');
+    const previewTextSpan = document.getElementById('previewText');
+
+    function generateClassId(name) {
+      if (!name || !name.trim()) return '';
+      let base = name.trim().toUpperCase().replace(/[^A-Z0-9\s]/g, '');
+      const words = base.split(/\s+/);
+      let shortId = '';
+
+      if (words.length === 1) {
+        shortId = words[0].substring(0, 5);
+      } else {
+        const max = Math.min(words.length, 3);
+        for (let i = 0; i < max; i++) {
+          shortId += words[i].charAt(0);
+        }
+      }
+
+      const randomNum = Math.floor(Math.random() * 900) + 100;
+      return `CLS-${shortId}-${randomNum}`;
+    }
+
+    function updateClassId() {
+      // Do NOT regenerate in promote mode
+      if (editingClassId) return;
+
+      const name = classNameInput.value.trim();
+      if (!name) {
+        classIdInput.value = '';
+        classIdPreview.style.display = 'none';
+        return;
+      }
+
+      const id = generateClassId(name);
+      classIdInput.value = id;
+      previewTextSpan.innerHTML = `Class ID: <strong>${id}</strong> (auto-generated)`;
+      classIdPreview.style.display = 'block';
+    }
+
+    classNameInput.addEventListener('input', updateClassId);
+
+    // ===== Session Input Formatter: XXXX-XXXX (4-4 digits, permanent hyphen) =====
+    function attachSessionFormatter() {
+      const sessionInput = document.getElementById('session');
+      if (!sessionInput) return;
+
+      sessionInput.addEventListener('input', function() {
+        // Remove everything except digits
+        let digits = this.value.replace(/\D/g, '');
+        // Limit to 8 digits total
+        digits = digits.substring(0, 8);
+
+        // Build formatted value: first 4 digits + '-' + next 4 digits
+        let formatted = digits;
+        if (digits.length > 4) {
+          formatted = digits.substring(0, 4) + '-' + digits.substring(4);
+        } else if (digits.length === 4) {
+          formatted = digits + '-';
+        }
+
+        this.value = formatted;
+      });
+
+      // Prevent deleting the hyphen when it's the only thing separating
+      sessionInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Backspace') {
+          const pos = this.selectionStart;
+          if (this.value[pos - 1] === '-' && pos === 5) {
+            e.preventDefault();
+            let digits = this.value.replace(/\D/g, '');
+            digits = digits.substring(0, 3);
+            this.value = digits;
+          }
+        }
+      });
+
+      // On blur, ensure format is complete if 8 digits are present
+      sessionInput.addEventListener('blur', function() {
+        let digits = this.value.replace(/\D/g, '');
+        if (digits.length === 8) {
+          this.value = digits.substring(0, 4) + '-' + digits.substring(4);
+        }
+      });
+    }
+
+    // ===== PROMOTE / EDIT MODE ENTRY =====
+    function enterEditMode(classId) {
+      const classes = loadClasses();
+      const cls = classes.find(c => c.id === classId);
+      if (!cls) {
+        showToast('⚠️ Class not found');
+        return;
+      }
+
+      editingClassId = classId;
+
+      // Update page header to reflect "Promote Class"
+      document.getElementById('pageTitleText').textContent = 'Promote Class';
+      document.getElementById('pageSubtitle').textContent = 'Promote this class to a new grade (all other details are locked)';
+      document.getElementById('submitBtn').innerHTML = '<i class="fas fa-arrow-up"></i> Promote Class';
+      document.getElementById('editLockNotice').style.display = 'inline-block';
+      document.getElementById('editLockNotice').innerHTML = '<i class="fas fa-lock"></i> Only Grade can be changed';
+
+      // ===== LOCK Class Name =====
+      const nameInput = document.getElementById('className');
+      nameInput.value = cls.name;
+      nameInput.readOnly = true;
+      nameInput.classList.add('locked-field');
+      nameInput.title = 'Class Name cannot be changed';
+
+      // ===== LOCK Class ID =====
+      const idInput = document.getElementById('classId');
+      idInput.value = cls.id;
+      idInput.readOnly = true;
+      idInput.classList.add('locked-field');
+      idInput.title = 'Class ID cannot be changed';
+
+      // Show a preview note about the locked ID
+      previewTextSpan.innerHTML = `Class ID: <strong>${cls.id}</strong> (locked)`;
+      classIdPreview.style.display = 'block';
+
+      // ===== LOCK Session =====
+      const sessionInput = document.getElementById('session');
+      sessionInput.value = cls.session || '';
+      sessionInput.readOnly = true;
+      sessionInput.classList.add('locked-field');
+      sessionInput.title = 'Session cannot be changed';
+
+      // ===== LOCK Section =====
+      const sectionInput = document.getElementById('section');
+      sectionInput.value = cls.section || '';
+      sectionInput.readOnly = true;
+      sectionInput.classList.add('locked-field');
+      sectionInput.title = 'Section cannot be changed';
+
+      // ===== EDITABLE: Grade =====
+      document.getElementById('grade').value = cls.grade || '';
+      document.getElementById('grade').disabled = false;
+
+      // Description is editable (informational field)
+      document.getElementById('description').value = cls.description || '';
+    }
+
+    // ===== Form Submission (CREATE + PROMOTE) =====
+    document.getElementById('classForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      const className = document.getElementById('className').value.trim();
+      const classId = document.getElementById('classId').value.trim();
+      const session = document.getElementById('session').value.trim();
+      const grade = document.getElementById('grade').value;
+      const section = document.getElementById('section').value.trim();
+      const description = document.getElementById('description').value.trim();
+
+      if (!className || !classId || !session || !grade || !section) {
+        showToast('⚠️ Please fill all required fields');
+        return;
+      }
+
+      // Validate session format: XXXX-XXXX (8 digits total)
+      const sessionDigits = session.replace(/\D/g, '');
+      if (sessionDigits.length !== 8) {
+        showToast('⚠️ Session must be in format XXXX-XXXX (8 digits)');
+        return;
+      }
+
+      const classes = loadClasses();
+
+      // ---------- PROMOTE / EDIT MODE ----------
+      if (editingClassId) {
+        const idx = classes.findIndex(c => c.id === editingClassId);
+        if (idx === -1) {
+          showToast('⚠️ Class record not found');
+          return;
+        }
+
+        const existing = classes[idx];
+
+        if (!grade) {
+          showToast('⚠️ Please select a Grade');
+          return;
+        }
+
+        const oldGrade = existing.grade;
+        const gradeChanged = oldGrade !== grade;
+
+        // Only Grade (and Description) can change.
+        // id, name, session, section, status, createdDate → preserved from existing
+        classes[idx] = {
+          ...existing,
+          grade: grade,
+          description: description
+        };
+
+        saveClasses(classes);
+
+        // ===== CASCADE: update grade for all students in this class =====
+        let cascadeCount = 0;
+        if (gradeChanged) {
+          const students = loadStudents();
+          students.forEach(s => {
+            if (s.classId === existing.id) {
+              s.grade = grade;
+              cascadeCount++;
+            }
+          });
+          saveStudents(students);
+        }
+
+        // Feedback
+        if (gradeChanged && cascadeCount > 0) {
+          showToast(`✅ Class "${existing.name}" promoted to ${grade} · ${cascadeCount} student${cascadeCount === 1 ? '' : 's'} updated`);
+        } else if (gradeChanged) {
+          showToast(`✅ Class "${existing.name}" promoted to ${grade}`);
+        } else {
+          showToast(`✅ Class "${existing.name}" updated`);
+        }
+
+        setTimeout(() => {
+          window.location.href = 'class-details.html';
+        }, 1100);
+        return;
+      }
+
+      // ---------- CREATE MODE ----------
+      if (classes.some(c => c.id.toLowerCase() === classId.toLowerCase())) {
+        showToast(`⚠️ Class ID "${classId}" already exists`);
+        return;
+      }
+
+      classes.push({
+        id: classId,
+        name: className,
+        session: session,
+        grade: grade,
+        section: section,
+        description: description,
+        status: 'Active',
+        createdDate: new Date().toLocaleString()
+      });
+
+      saveClasses(classes);
+      showToast(`✅ Class "${className}" created successfully`);
+      resetForm();
+    });
+  </script>
+</body>
+</html>
