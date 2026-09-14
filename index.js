@@ -136,7 +136,7 @@ togglePass.addEventListener('click', () => {
 // ===== demo links =====
 $('#forgotLink').addEventListener('click', (e) => {
   e.preventDefault();
-  notify('Contact Admission Manager or school administration to reset your password.');
+  notify('Contact Admin to reset your password.');
 });
 $('#sso').addEventListener('click', () => { notify('Opening institute single sign-on'); });
 
@@ -241,7 +241,7 @@ loginForm.addEventListener('submit', function(e) {
 
     // ADMIN
     else if (selectedRole === 'manager') {
-      if (username === 'ADMIN' && password === 'MESS') {
+      if (username === 'MEI.ADMIN.UMAR.18747' && password === 'mei.umar.18747') {
         localStorage.setItem('messCurrentUser', JSON.stringify({
           regNo: 'ADMIN',
           role: 'manager',
