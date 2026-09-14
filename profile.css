@@ -1,139 +1,163 @@
-/* ============================================
-   PROFILE.CSS - Unified Profile Styles
-   Works for: Student | Teacher
-   All Icons Colored Blue | Sharp Corners | Fully Responsive
-   Matches style.css design system
-   ============================================ */
+/* ============================================================
+   profile.css
+   Unified styles for Student & Teacher Profile Pages
+   - Mobile-first photo card at top
+   - Answer fields pushed to far right on desktop/tablet
+   - Fully responsive across all breakpoints
+   ============================================================ */
 
-/* ============================================
-   GLOBAL BASE
-   ============================================ */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&family=Poppins:wght@500;600;700&display=swap');
+
+/* ---------- Root Variables ---------- */
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-light: #eff6ff;
+  --text-dark: #0f172a;
+  --text-body: #334155;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --bg-page: #f5f7fb;
+  --bg-card: #ffffff;
+}
+
+/* ---------- Global Reset / Base ---------- */
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+html,
 body {
-  font-family: 'Segoe UI', Roboto, system-ui, sans-serif;
-  background: #f8fafc;
-  color: #1e293b;
-  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
-/* ============================================
-   APP CONTAINER - FULL WIDTH
-   ============================================ */
+body {
+  font-family: 'Inter', system-ui, sans-serif;
+  background: var(--bg-page);
+  color: var(--text-dark);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* ============================================================
+   APP LAYOUT
+   ============================================================ */
 .app-container {
   display: flex;
   min-height: 100vh;
   width: 100%;
+  max-width: 100%;
 }
 
 .main-panel {
   flex: 1;
-  padding: 40px 32px;
-  background: #f8fafc;
-  min-height: calc(100vh - 70px);
+  padding: 24px;
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  transition: all 0.3s;
 }
 
-/* ============================================
-   PAGE HEADER - matching style.css
-   ============================================ */
+/* ============================================================
+   PAGE HEADER
+   ============================================================ */
 .page-header {
   background: white;
-  padding: 40px 36px;
+  padding: 24px 28px;
   margin-bottom: 32px;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.07);
-  border: 1px solid #f1f5f9;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.04);
+  border: 1px solid #e9eef3;
+  border-radius: 0;
   width: 100%;
 }
 
 .page-header h1 {
+  font-family: 'Poppins', sans-serif;
   font-size: 28px;
   font-weight: 700;
-  color: #1e293b;
-  margin-bottom: 0;
-  display: flex;
-  align-items: center;
-  gap: 12px;
   background: linear-gradient(135deg, #1e3a8a, #2563eb);
   background-clip: text;
   -webkit-background-clip: text;
   color: transparent;
+  display: flex;
+  align-items: center;
+  gap: 14px;
 }
 
-.page-header h1 i {
-  color: #2563eb;
-  background: none;
-  -webkit-text-fill-color: #2563eb;
-}
-
-/* ============================================
+/* ============================================================
    DASHBOARD GRID
-   ============================================ */
+   ============================================================ */
 .dashboard-content {
   display: grid;
   grid-template-columns: 2fr 1fr;
   gap: 28px;
   width: 100%;
   max-width: 100%;
+  min-width: 0;
+  align-items: start;
 }
 
-.left-column {
-  display: flex;
-  flex-direction: column;
-  gap: 28px;
-}
-
+.left-column,
 .right-column {
   display: flex;
   flex-direction: column;
   gap: 28px;
+  min-width: 0;
 }
 
-/* ============================================
-   CARDS - matching style.css
-   ============================================ */
+/* ============================================================
+   CARDS
+   ============================================================ */
 .card {
   background: white;
-  box-shadow: 0 4px 25px rgba(0, 0, 0, 0.07);
-  border: 1px solid #f1f5f9;
+  border-radius: 0;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
+  border: 1px solid #edf2f7;
   overflow: hidden;
+  width: 100%;
+  transition: box-shadow 0.25s ease;
+}
+
+.card:hover {
+  box-shadow: 0 12px 30px rgba(37, 99, 235, 0.1);
 }
 
 .card-header {
   padding: 20px 28px;
   background: #f8fafc;
-  border-bottom: 1.5px solid #e2e8f0;
+  border-bottom: 1px solid #e2e8f0;
   display: flex;
   align-items: center;
   gap: 12px;
 }
 
-.card-header i {
-  color: #2563eb;
-  font-size: 18px;
-}
-
 .card-header h2 {
-  font-size: 17px;
-  font-weight: 700;
-  color: #1e293b;
-  margin: 0;
+  font-family: 'Poppins', sans-serif;
+  font-size: 18px;
+  font-weight: 600;
+  color: #1e2937;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
 .card-content {
   padding: 28px;
 }
 
-/* ============================================
+/* ============================================================
    PHOTO CARD
-   ============================================ */
+   ============================================================ */
 .photo-card {
   text-align: center;
 }
@@ -142,12 +166,20 @@ body {
   width: 160px;
   height: 200px;
   margin: 0 auto;
-  border: 1.5px solid #2563eb;
+  border: 5px solid #2563eb;
   overflow: hidden;
-  background: #eff6ff;
+  background: #f1f5f9;
+  box-shadow: 0 10px 20px rgba(37, 99, 235, 0.15);
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.photo-frame:hover {
+  transform: scale(1.02);
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.25);
 }
 
 .photo-frame img {
@@ -163,221 +195,246 @@ body {
 
 .reg-number-bold {
   margin-top: 20px;
-  font-size: 18px;
-  font-weight: 700;
-  color: #1e293b;
-  background: #eff6ff;
-  border: 1.5px solid #bfdbfe;
+  font-size: 21px;
+  font-weight: 800;
+  background: linear-gradient(90deg, #2563eb, #3b82f6);
+  color: white;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   padding: 10px 28px;
+  border-radius: 0;
+  box-shadow: 0 4px 15px rgba(37, 99, 235, 0.25);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
 
-.reg-number-bold i {
-  color: #2563eb;
+.reg-number-bold:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(37, 99, 235, 0.35);
 }
 
-/* ============================================
-   INFO ROWS - matching style.css
-   ============================================ */
+/* ============================================================
+   INFO ROWS – VALUE PUSHED TO FAR RIGHT
+   ============================================================ */
 .info-row {
   display: flex;
-  margin-bottom: 18px;
+  justify-content: space-between;   /* label left, value right */
   align-items: flex-start;
+  gap: 16px;
+  margin-bottom: 18px;
+  padding-bottom: 14px;
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.2s ease;
 }
 
 .info-row:last-child {
   margin-bottom: 0;
+  padding-bottom: 0;
+  border-bottom: none;
+}
+
+.info-row:hover {
+  background: #f8fafc;
 }
 
 .info-label {
-  width: 155px;
-  font-size: 12.5px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   color: #64748b;
   text-transform: uppercase;
-  letter-spacing: 0.3px;
   flex-shrink: 0;
-  padding-top: 1px;
+  min-width: 155px;
+  padding-top: 2px;
 }
 
 .info-value {
   flex: 1;
   font-weight: 500;
-  color: #1e293b;
+  color: #0f172a;
   font-size: 15px;
-  line-height: 1.6;
+  line-height: 1.5;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  min-width: 0;
+  text-align: right;        /* ← pushes value to the far right */
 }
 
-/* ============================================
-   SUBJECT TAGS
-   ============================================ */
-.subjects-tags {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-  margin-top: 2px;
+.info-value:empty::after {
+  content: '—';
+  color: #cbd5e1;
+  font-weight: 400;
 }
 
-.subjects-tag {
-  display: inline-block;
-  background: #eff6ff;
-  color: #1e40af;
-  padding: 5px 14px;
-  font-size: 12.5px;
-  font-weight: 600;
-  border: 1px solid #bfdbfe;
-}
-
-/* ============================================
+/* ============================================================
    STATUS BADGE
-   ============================================ */
+   ============================================================ */
 .status-badge {
   display: inline-block;
-  padding: 5px 16px;
-  font-size: 12.5px;
+  padding: 6px 20px;
+  font-size: 14px;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.3px;
   background: #d1fae5;
   color: #166534;
-  border: 1px solid #a7f3d0;
+  border-radius: 0;
+  letter-spacing: 0.3px;
 }
 
-.status-badge.inactive {
-  background: #fee2e2;
-  color: #991b1b;
-  border-color: #fca5a5;
-}
-
-.status-badge.pending {
-  background: #fef3c7;
-  color: #92400e;
-  border-color: #fcd34d;
-}
-
-/* ============================================
-   EMPTY STATE
-   ============================================ */
-.empty-state {
-  text-align: center;
-  padding: 40px 20px;
-  color: #94a3b8;
-}
-
-.empty-state i {
-  font-size: 28px;
-  color: #2563eb;
-  display: block;
-  margin-bottom: 12px;
-}
-
-.empty-state p {
-  font-size: 14px;
-}
-
-/* ============================================
-   FULLY RESPONSIVE BREAKPOINTS
-   ============================================ */
-
-/* ===== LARGE DESKTOP (1200px and below) ===== */
-@media (max-width: 1200px) {
+/* ============================================================
+   RESPONSIVE – LARGE TABLET / SMALL LAPTOP
+   ============================================================ */
+@media (max-width: 1024px) {
   .dashboard-content {
+    grid-template-columns: 1fr;
     gap: 24px;
+  }
+
+  .main-panel {
+    padding: 20px;
+  }
+
+  /* Photo card moves to TOP on tablet & below */
+  .right-column {
+    order: -1;
+  }
+
+  /* Photo card becomes horizontal on tablet for better space use */
+  .photo-card .card-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 28px;
+    padding: 24px 28px;
+    text-align: left;
+  }
+
+  .photo-frame {
+    width: 130px;
+    height: 165px;
+    margin: 0;
+    flex-shrink: 0;
+  }
+
+  .reg-number-bold {
+    margin-top: 0;
+    font-size: 18px;
+    padding: 10px 24px;
+  }
+
+  .photo-card .card-content > .reg-number-bold {
+    align-self: center;
   }
 }
 
-/* ===== TABLET / SMALL DESKTOP (992px and below) ===== */
-@media (max-width: 992px) {
+/* ============================================================
+   RESPONSIVE – TABLET PORTRAIT / MOBILE
+   ============================================================ */
+@media (max-width: 768px) {
   .main-panel {
-    padding: 24px 20px;
+    padding: 16px;
   }
 
   .page-header {
-    padding: 28px 24px;
+    padding: 18px 20px;
+    margin-bottom: 22px;
   }
 
   .page-header h1 {
-    font-size: 24px;
+    font-size: 22px;
+    gap: 10px;
   }
 
   .dashboard-content {
-    grid-template-columns: 1.5fr 1fr;
-    gap: 24px;
+    gap: 20px;
   }
 
   .left-column,
   .right-column {
-    gap: 24px;
+    gap: 20px;
   }
 
-  .card-header {
-    padding: 18px 24px;
-  }
-
-  .card-header h2 {
-    font-size: 16px;
-  }
-
-  .card-content {
-    padding: 24px;
-  }
-
-  .info-row {
+  /* Photo card back to vertical/stacked on phones */
+  .photo-card .card-content {
     flex-direction: column;
-    gap: 4px;
-    margin-bottom: 16px;
-  }
-
-  .info-label {
-    width: auto;
-    font-size: 11px;
-  }
-
-  .info-value {
-    font-size: 14px;
+    text-align: center;
+    gap: 16px;
+    padding: 22px;
   }
 
   .photo-frame {
     width: 140px;
     height: 175px;
+    margin: 0 auto;
   }
 
   .reg-number-bold {
+    margin-top: 0;
+    font-size: 17px;
+    padding: 9px 22px;
+  }
+
+  /* Info rows stack label above value */
+  .info-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+    padding-bottom: 12px;
+  }
+
+  .info-label {
+    min-width: 0;
+    width: auto;
+    font-size: 12.5px;
+  }
+
+  .info-value {
+    font-size: 14px;
+    width: 100%;
+    text-align: left;       /* ← back to left on mobile stacked rows */
+  }
+
+  .card-content {
+    padding: 22px;
+  }
+
+  .card-header {
+    padding: 18px 22px;
+  }
+
+  .card-header h2 {
     font-size: 16px;
-    padding: 8px 24px;
   }
 }
 
-/* ===== MOBILE (768px and below) ===== */
-@media (max-width: 768px) {
+/* ============================================================
+   RESPONSIVE – SMALL MOBILE
+   ============================================================ */
+@media (max-width: 480px) {
   .main-panel {
-    padding: 16px 12px;
+    padding: 12px;
   }
 
   .page-header {
-    padding: 20px 18px;
-    margin-bottom: 24px;
+    padding: 16px 18px;
+    margin-bottom: 18px;
   }
 
   .page-header h1 {
-    font-size: 20px;
-    gap: 10px;
-  }
-
-  .page-header h1 i {
-    font-size: 20px;
+    font-size: 19px;
+    gap: 8px;
   }
 
   .dashboard-content {
-    grid-template-columns: 1fr;
-    gap: 20px;
+    gap: 16px;
   }
 
   .left-column,
   .right-column {
-    gap: 20px;
+    gap: 16px;
+  }
+
+  .card-content {
+    padding: 18px;
   }
 
   .card-header {
@@ -388,32 +445,10 @@ body {
     font-size: 15px;
   }
 
-  .card-header i {
-    font-size: 16px;
-  }
-
-  .card-content {
-    padding: 20px 18px;
-  }
-
-  .info-row {
-    flex-direction: column;
-    gap: 4px;
-    margin-bottom: 14px;
-  }
-
-  .info-label {
-    font-size: 10.5px;
-    width: auto;
-  }
-
-  .info-value {
-    font-size: 13.5px;
-  }
-
   .photo-frame {
     width: 120px;
     height: 150px;
+    border-width: 4px;
   }
 
   .photo-frame .photo-placeholder {
@@ -422,201 +457,62 @@ body {
 
   .reg-number-bold {
     font-size: 15px;
-    padding: 8px 20px;
-    margin-top: 16px;
+    padding: 8px 18px;
   }
 
-  .subjects-tag {
-    font-size: 11px;
-    padding: 4px 10px;
+  .info-label {
+    font-size: 11.5px;
+  }
+
+  .info-value {
+    font-size: 13px;
   }
 
   .status-badge {
-    font-size: 11px;
-    padding: 4px 14px;
+    font-size: 12px;
+    padding: 5px 16px;
   }
 }
 
-/* ===== SMALL MOBILE (480px and below) ===== */
-@media (max-width: 480px) {
+/* ============================================================
+   RESPONSIVE – EXTRA SMALL PHONES
+   ============================================================ */
+@media (max-width: 380px) {
   .main-panel {
-    padding: 12px 8px;
-  }
-
-  .page-header {
-    padding: 14px 14px;
+    padding: 10px;
   }
 
   .page-header h1 {
     font-size: 17px;
-    gap: 8px;
   }
 
-  .page-header h1 i {
-    font-size: 18px;
+  .photo-frame {
+    width: 105px;
+    height: 130px;
   }
 
-  .dashboard-content {
-    gap: 16px;
-  }
-
-  .left-column,
-  .right-column {
-    gap: 16px;
-  }
-
-  .card-header {
-    padding: 14px 14px;
-  }
-
-  .card-header h2 {
+  .reg-number-bold {
     font-size: 14px;
-  }
-
-  .card-header i {
-    font-size: 14px;
-  }
-
-  .card-content {
-    padding: 16px 14px;
-  }
-
-  .info-row {
-    margin-bottom: 12px;
+    padding: 7px 14px;
   }
 
   .info-label {
-    font-size: 10px;
+    font-size: 11px;
   }
 
   .info-value {
-    font-size: 13px;
-  }
-
-  .photo-frame {
-    width: 100px;
-    height: 125px;
-  }
-
-  .photo-frame .photo-placeholder {
-    font-size: 36px;
-  }
-
-  .reg-number-bold {
-    font-size: 13px;
-    padding: 6px 16px;
-    margin-top: 14px;
-    gap: 6px;
-  }
-
-  .reg-number-bold i {
-    font-size: 14px;
-  }
-
-  .subjects-tags {
-    gap: 6px;
-  }
-
-  .subjects-tag {
-    font-size: 10px;
-    padding: 3px 8px;
-  }
-
-  .status-badge {
-    font-size: 10px;
-    padding: 3px 12px;
+    font-size: 12.5px;
   }
 }
 
-/* ===== EXTRA SMALL (360px and below) ===== */
-@media (max-width: 360px) {
-  .main-panel {
-    padding: 8px 4px;
-  }
-
-  .page-header {
-    padding: 10px 10px;
-  }
-
-  .page-header h1 {
-    font-size: 15px;
-  }
-
-  .card-header {
-    padding: 10px 10px;
-  }
-
-  .card-header h2 {
-    font-size: 12px;
-  }
-
-  .card-content {
-    padding: 12px 10px;
-  }
-
-  .info-value {
-    font-size: 12px;
-  }
-
-  .photo-frame {
-    width: 80px;
-    height: 100px;
-  }
-
-  .reg-number-bold {
-    font-size: 12px;
-    padding: 4px 12px;
-  }
-}
-
-/* ============================================
-   PRINT STYLES
-   ============================================ */
-@media print {
-  .btn-actions,
-  .btn-open,
-  .open-btn,
-  .save-btn,
-  .save-row,
-  .modal-close,
-  .upload-box,
-  .type-select {
-    display: none !important;
-  }
-
-  .card {
-    box-shadow: none;
-    border: 1px solid #ddd;
-  }
-
-  .page-header {
-    box-shadow: none;
-    border: 1px solid #ddd;
-  }
-
-  .photo-frame {
-    border-color: #000 !important;
-  }
-
-  .reg-number-bold {
-    background: #f0f0f0 !important;
-    color: #000 !important;
-    border: 1px solid #000;
-  }
-
-  .reg-number-bold i {
-    color: #000 !important;
-  }
-
-  .status-badge {
-    background: #f0f0f0 !important;
-    color: #000 !important;
-    border: 1px solid #000;
-  }
-
-  .subjects-tag {
-    background: #f0f0f0 !important;
-    color: #000 !important;
-    border: 1px solid #000;
+/* ============================================================
+   ACCESSIBILITY – Reduced Motion
+   ============================================================ */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
   }
 }
