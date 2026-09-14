@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – Reports & Analytics Dashboard</title>
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <link rel="stylesheet" href="../dashboard.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+  <style>
+    /* ===== Reports-specific styles (inside main-panel) ===== */
+    .reports-container {
+      width: 100%;
+      max-width: 100%;
+      padding: 0;
+    }
+
+    .reports-header {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 24px 28px;
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+
+    .reports-header-title h1 {
+      font-size: clamp(1.4rem, 3vw, 1.85rem);
+      font-weight: 700;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+    }
+
+    .reports-header-title p {
+      color: #64748b;
+      font-size: 0.875rem;
+      margin-top: 6px;
+    }
+
+    .download-btn {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+      border: none;
+      padding: 11px 22px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.875rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      transition: transform 0.25s, box-shadow 0.25s;
+      box-shadow: 0 4px 14px rgba(102, 126, 234, 0.35);
+      white-space: nowrap;
+    }
+
+    .download-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 18px rgba(102, 126, 234, 0.5);
+    }
+
+    .download-btn:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .charts-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .chart-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      padding: 20px;
+      border-radius: 14px;
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.5);
+      min-width: 0;
+    }
+
+    .chart-title {
+      font-size: 0.95rem;
+      font-weight: 700;
+      color: #1e293b;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .chart-title i {
+      color: #667eea;
+      font-size: 1rem;
+    }
+
+    .chart-container {
+      position: relative;
+      height: 260px;
+      width: 100%;
+    }
+
+    .full-width-chart {
+      grid-column: 1 / -1;
+    }
+
+    .export-progress {
+      display: none;
+      text-align: center;
+      padding: 16px;
+      background: #f8fafc;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .export-progress.show {
+      display: block;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 4px;
+      background: #e2e8f0;
+      border-radius: 2px;
+      overflow: hidden;
+      margin-top: 10px;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+      width: 0%;
+      transition: width 0.3s;
+    }
+
+    .trend-toggle {
+      display: inline-flex;
+      gap: 4px;
+      margin-left: auto;
+      background: #f1f5f9;
+      border-radius: 8px;
+      padding: 3px;
+    }
+
+    .trend-toggle button {
+      border: none;
+      background: transparent;
+      padding: 5px 12px;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #64748b;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+
+    .trend-toggle button.active {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      color: white;
+    }
+
+    /* ===== Responsive ===== */
+    @media (max-width: 1024px) {
+      .chart-container {
+        height: 240px;
+      }
+    }
+
+    @media (max-width: 768px) {
+      .reports-header {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 18px;
+      }
+
+      .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 14px;
+      }
+
+      .full-width-chart {
+        grid-column: auto;
+      }
+
+      .chart-container {
+        height: 220px;
+      }
+
+      .download-btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .chart-container {
+        height: 200px;
+      }
+
+      .reports-header-title h1 {
+        font-size: 1.25rem;
+      }
+
+      .trend-toggle {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 8px;
+        justify-content: center;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="main-panel">
+      <!-- Watermark Logo -->
+      <div class="watermark" aria-hidden="true"></div>
+
+      <div class="reports-container">
+        <!-- Header -->
+        <div class="reports-header">
+          <div class="reports-header-title">
+            <h1><i class="fas fa-chart-line"></i> Analytics Dashboard</h1>
+            <p>Charts & graphs overview of institutional performance</p>
+          </div>
+          <button class="download-btn" id="downloadBtn" onclick="downloadExcel()">
+            <i class="fas fa-file-excel"></i> Download Excel Report
+          </button>
+        </div>
+
+        <!-- Export Progress -->
+        <div class="export-progress" id="exportProgress">
+          <p style="margin-bottom: 8px; color: #1e293b; font-size: 0.9rem;">Generating Excel Report...</p>
+          <div class="progress-bar">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <!-- Charts Grid only -->
+        <div class="charts-grid">
+          <!-- Student Status Chart -->
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Student Status Distribution</div>
+            <div class="chart-container">
+              <canvas id="studentStatusChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Teacher Status Chart -->
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Teacher Status Distribution</div>
+            <div class="chart-container">
+              <canvas id="teacherStatusChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Fee Status Chart -->
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-chart-pie"></i> Fee Payment Status</div>
+            <div class="chart-container">
+              <canvas id="feeStatusChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Student Gender Chart -->
+          <div class="chart-card">
+            <div class="chart-title"><i class="fas fa-venus-mars"></i> Students by Gender</div>
+            <div class="chart-container">
+              <canvas id="studentGenderChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Students per Class -->
+          <div class="chart-card full-width-chart">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i> Students Enrollment by Class</div>
+            <div class="chart-container">
+              <canvas id="studentsPerClassChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Fee Collection Trend (Month / Day toggle) -->
+          <div class="chart-card full-width-chart">
+            <div class="chart-title">
+              <i class="fas fa-chart-line"></i> Fee Collection Trend
+              <div class="trend-toggle">
+                <button type="button" id="trendMonthBtn" class="active" onclick="switchFeeTrend('month')">By Month</button>
+                <button type="button" id="trendDayBtn" onclick="switchFeeTrend('day')">By Day</button>
+              </div>
+            </div>
+            <div class="chart-container">
+              <canvas id="feeCollectionTrendChart"></canvas>
+            </div>
+          </div>
+
+          <!-- Fee Types Distribution -->
+          <div class="chart-card full-width-chart">
+            <div class="chart-title"><i class="fas fa-chart-bar"></i> Fee Collection by Type</div>
+            <div class="chart-container">
+              <canvas id="feeTypeChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <script src="../components.js"></script>
+
+  <script>
+    // ===== Load Header and Sidebar (same as index) =====
+    function loadComponents() {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading header:', err));
+
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('sidebar-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    // ===== DATA LOADING =====
+    function loadFromStorage(key) {
+      try {
+        return JSON.parse(localStorage.getItem(key)) || [];
+      } catch {
+        return [];
+      }
+    }
+
+    let students = [];
+    let teachers = [];
+    let classes = [];
+    let feeRecords = [];
+    let charts = {};
+    let currentFeeTrendMode = 'month';
+
+    function refreshData() {
+      students = loadFromStorage('messStudents');
+      teachers = loadFromStorage('messTeachers');
+      classes = loadFromStorage('messClasses');
+      feeRecords = loadFromStorage('messFeeRecords');
+    }
+
+    // ===== CHART HELPERS =====
+    function destroyChart(chartId) {
+      if (charts[chartId]) {
+        charts[chartId].destroy();
+        delete charts[chartId];
+      }
+    }
+
+    function createStudentStatusChart() {
+      destroyChart('studentStatus');
+      const active = students.filter(s => s.status === 'Active').length;
+      const inactive = students.filter(s => s.status === 'Inactive').length;
+
+      charts['studentStatus'] = new Chart(document.getElementById('studentStatusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Inactive'],
+          datasets: [{
+            data: [active, inactive],
+            backgroundColor: ['#d1fae5', '#fee2e2'],
+            borderColor: ['#10b981', '#ef4444'],
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true }
+            }
+          }
+        }
+      });
+    }
+
+    function createTeacherStatusChart() {
+      destroyChart('teacherStatus');
+      const active = teachers.filter(t => t.status === 'Active').length;
+      const inactive = teachers.filter(t => t.status === 'Inactive').length;
+
+      charts['teacherStatus'] = new Chart(document.getElementById('teacherStatusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Active', 'Inactive'],
+          datasets: [{
+            data: [active, inactive],
+            backgroundColor: ['#fbbf24', '#fca5a5'],
+            borderColor: ['#f59e0b', '#dc2626'],
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true }
+            }
+          }
+        }
+      });
+    }
+
+    function createFeeStatusChart() {
+      destroyChart('feeStatus');
+      const paid = feeRecords.filter(f => f.status === 'Paid').length;
+      const unpaid = feeRecords.filter(f => f.status === 'Unpaid').length;
+
+      charts['feeStatus'] = new Chart(document.getElementById('feeStatusChart'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Paid', 'Unpaid'],
+          datasets: [{
+            data: [paid, unpaid],
+            backgroundColor: ['#86efac', '#fca5a5'],
+            borderColor: ['#22c55e', '#ef4444'],
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true }
+            }
+          }
+        }
+      });
+    }
+
+    // Students by Gender (blue = boys, pink = girls)
+    function createStudentGenderChart() {
+      destroyChart('studentGender');
+      const male = students.filter(s => {
+        const g = (s.gender || '').toString().toLowerCase().trim();
+        return g === 'male' || g === 'boy' || g === 'm' || g === 'boys';
+      }).length;
+      const female = students.filter(s => {
+        const g = (s.gender || '').toString().toLowerCase().trim();
+        return g === 'female' || g === 'girl' || g === 'f' || g === 'girls';
+      }).length;
+      const other = students.length - male - female;
+
+      const labels = ['Boys', 'Girls'];
+      const data = [male, female];
+      const bg = ['#3b82f6', '#ec4899'];
+      const border = ['#2563eb', '#db2777'];
+
+      if (other > 0) {
+        labels.push('Other / Unspecified');
+        data.push(other);
+        bg.push('#94a3b8');
+        border.push('#64748b');
+      }
+
+      charts['studentGender'] = new Chart(document.getElementById('studentGenderChart'), {
+        type: 'doughnut',
+        data: {
+          labels: labels,
+          datasets: [{
+            data: data,
+            backgroundColor: bg,
+            borderColor: border,
+            borderWidth: 2,
+            hoverOffset: 10
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: {
+              position: 'bottom',
+              labels: { font: { size: 12, weight: '600' }, padding: 12, usePointStyle: true }
+            }
+          }
+        }
+      });
+    }
+
+    function createStudentsPerClassChart() {
+      destroyChart('studentsPerClass');
+      const classMap = {};
+      students.forEach(s => {
+        const className = s.className || 'Unassigned';
+        classMap[className] = (classMap[className] || 0) + 1;
+      });
+
+      const labels = Object.keys(classMap).sort();
+      const data = labels.map(c => classMap[c]);
+
+      charts['studentsPerClass'] = new Chart(document.getElementById('studentsPerClassChart'), {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['No data'],
+          datasets: [{
+            label: 'Number of Students',
+            data: labels.length ? data : [0],
+            backgroundColor: 'rgba(102, 126, 234, 0.8)',
+            borderColor: 'rgba(102, 126, 234, 1)',
+            borderRadius: 8,
+            borderWidth: 1,
+            hoverBackgroundColor: 'rgba(118, 75, 162, 1)'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, labels: { font: { size: 12, weight: '600' } } }
+          },
+          scales: {
+            y: { beginAtZero: true, ticks: { stepSize: 1 } }
+          }
+        }
+      });
+    }
+
+    // Fee Collection Trend – Month or Day
+    function getFeeTrendData(mode) {
+      const paid = feeRecords.filter(f => f.status === 'Paid');
+      const map = {};
+
+      if (mode === 'day') {
+        paid.forEach(f => {
+          let dayKey = 'Unknown';
+          if (f.paidDateTime) {
+            const d = new Date(f.paidDateTime);
+            if (!isNaN(d.getTime())) {
+              dayKey = d.toISOString().slice(0, 10);
+            } else {
+              const raw = String(f.paidDateTime).trim();
+              if (/^\d{4}-\d{2}-\d{2}/.test(raw)) dayKey = raw.slice(0, 10);
+            }
+          }
+          map[dayKey] = (map[dayKey] || 0) + (Number(f.amount) || 0);
+        });
+      } else {
+        paid.forEach(f => {
+          const month = f.feeMonth || 'Unknown';
+          map[month] = (map[month] || 0) + (Number(f.amount) || 0);
+        });
+      }
+
+      const labels = Object.keys(map).sort();
+      const data = labels.map(k => map[k]);
+      return { labels, data };
+    }
+
+    function createFeeCollectionTrendChart(mode) {
+      mode = mode || currentFeeTrendMode;
+      destroyChart('feeCollectionTrend');
+      const { labels, data } = getFeeTrendData(mode);
+
+      charts['feeCollectionTrend'] = new Chart(document.getElementById('feeCollectionTrendChart'), {
+        type: 'line',
+        data: {
+          labels: labels.length ? labels : ['No data'],
+          datasets: [{
+            label: mode === 'day' ? 'Fee Collected by Day (PKR)' : 'Fee Collected by Month (PKR)',
+            data: labels.length ? data : [0],
+            borderColor: '#43e97b',
+            backgroundColor: 'rgba(67, 233, 123, 0.12)',
+            borderWidth: 3,
+            fill: true,
+            tension: 0.35,
+            pointRadius: 5,
+            pointBackgroundColor: '#43e97b',
+            pointBorderColor: '#fff',
+            pointBorderWidth: 2,
+            hoverRadius: 7
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { display: true, labels: { font: { size: 12, weight: '600' } } }
+          },
+          scales: {
+            y: {
+              beginAtZero: true,
+              ticks: { callback: v => 'PKR ' + Number(v).toLocaleString() }
+            },
+            x: {
+              ticks: {
+                maxRotation: mode === 'day' ? 45 : 0,
+                minRotation: mode === 'day' ? 30 : 0,
+                autoSkip: true,
+                maxTicksLimit: mode === 'day' ? 12 : 20
+              }
+            }
+          }
+        }
+      });
+    }
+
+    function switchFeeTrend(mode) {
+      currentFeeTrendMode = mode;
+      document.getElementById('trendMonthBtn').classList.toggle('active', mode === 'month');
+      document.getElementById('trendDayBtn').classList.toggle('active', mode === 'day');
+      createFeeCollectionTrendChart(mode);
+    }
+
+    function createFeeTypeChart() {
+      destroyChart('feeType');
+      const feeTypeMap = {};
+      feeRecords.forEach(f => {
+        const type = f.feeType || 'Other';
+        feeTypeMap[type] = (feeTypeMap[type] || 0) + (Number(f.amount) || 0);
+      });
+
+      const labels = Object.keys(feeTypeMap).sort();
+      const data = labels.map(t => feeTypeMap[t]);
+      const colors = ['#667eea', '#764ba2', '#f093fb', '#f5576c', '#4facfe', '#00f2fe', '#43e97b', '#fbbf24'];
+
+      charts['feeType'] = new Chart(document.getElementById('feeTypeChart'), {
+        type: 'bar',
+        data: {
+          labels: labels.length ? labels : ['No data'],
+          datasets: [{
+            label: 'Total Amount (PKR)',
+            data: labels.length ? data : [0],
+            backgroundColor: colors.slice(0, Math.max(labels.length, 1)),
+            borderRadius: 8,
+            borderWidth: 0,
+            hoverBackgroundColor: '#764ba2'
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          indexAxis: 'y',
+          plugins: {
+            legend: { display: true, labels: { font: { size: 12, weight: '600' } } }
+          },
+          scales: {
+            x: {
+              beginAtZero: true,
+              ticks: { callback: v => 'PKR ' + Number(v).toLocaleString() }
+            }
+          }
+        }
+      });
+    }
+
+    // ===== EXCEL REPORT (kept) =====
+    async function downloadExcel() {
+      const btn = document.getElementById('downloadBtn');
+      btn.disabled = true;
+      const progress = document.getElementById('exportProgress');
+      const progressFill = document.getElementById('progressFill');
+      progress.classList.add('show');
+
+      try {
+        const wb = XLSX.utils.book_new();
+        
+        progressFill.style.width = '20%';
+        const studentData = students.map(s => ({
+          'Reg. No.': s.regNo,
+          'Student Name': s.studentName,
+          'Father Name': s.fatherName,
+          'Class': s.className,
+          'Gender': s.gender,
+          'Phone': s.phoneNumber,
+          'CNIC': s.cnic,
+          'Email': s.email,
+          'DOB': s.dob,
+          'Address': s.address,
+          'Guardian Name': s.guardianName,
+          'Guardian Phone': s.guardianPhone,
+          'Status': s.status,
+          'Joining Date': s.joiningDate
+        }));
+        const ws1 = XLSX.utils.json_to_sheet(studentData);
+        XLSX.utils.book_append_sheet(wb, ws1, 'Students');
+
+        progressFill.style.width = '40%';
+        const teacherData = teachers.map(t => ({
+          'Reg. No.': t.regNo,
+          'Teacher Name': t.teacherName,
+          'Father Name': t.fatherName,
+          'Qualification': t.qualification,
+          'Subject': t.subjectsCanTeach,
+          'Phone': t.phoneNumber,
+          'CNIC': t.cnic,
+          'Email': t.email,
+          'Gender': t.gender,
+          'DOB': t.dob,
+          'Address': t.address,
+          'Experience': t.experience,
+          'Designation': t.designation,
+          'Previous School': t.previousSchool,
+          'Status': t.status,
+          'Joining Date': t.joiningDate
+        }));
+        const ws2 = XLSX.utils.json_to_sheet(teacherData);
+        XLSX.utils.book_append_sheet(wb, ws2, 'Teachers');
+
+        progressFill.style.width = '60%';
+        const classData = classes.map(c => ({
+          'Class ID': c.id,
+          'Class Name': c.name,
+          'Session': c.session,
+          'Grade': c.grade,
+          'Section': c.section,
+          'Status': c.status
+        }));
+        const ws3 = XLSX.utils.json_to_sheet(classData);
+        XLSX.utils.book_append_sheet(wb, ws3, 'Classes');
+
+        progressFill.style.width = '85%';
+        const feeData = feeRecords.map(f => ({
+          'Receipt No.': f.receiptNo,
+          'Student Name': f.studentName,
+          'Reg. No.': f.regNo,
+          'Class': f.className,
+          'Fee Type': f.feeType,
+          'Fee Month': f.feeMonth,
+          'Amount (PKR)': f.amount,
+          'Status': f.status,
+          'Payment Date': f.paidDateTime
+        }));
+        const ws4 = XLSX.utils.json_to_sheet(feeData);
+        XLSX.utils.book_append_sheet(wb, ws4, 'Fees');
+
+        [ws1, ws2, ws3, ws4].forEach(ws => {
+          ws['!cols'] = [{wch: 14}, {wch: 18}, {wch: 18}, {wch: 14}, {wch: 12}, {wch: 14}];
+        });
+
+        progressFill.style.width = '100%';
+        const filename = `MEI_Report_${new Date().toISOString().split('T')[0]}.xlsx`;
+        XLSX.writeFile(wb, filename);
+
+        setTimeout(() => {
+          progress.classList.remove('show');
+          progressFill.style.width = '0%';
+          alert('✅ Excel report downloaded successfully!');
+        }, 400);
+      } catch (error) {
+        console.error('Export error:', error);
+        alert('❌ Error generating report. Please try again.');
+        progress.classList.remove('show');
+      } finally {
+        btn.disabled = false;
+      }
+    }
+
+    // ===== INITIALIZE =====
+    function init() {
+      refreshData();
+      createStudentStatusChart();
+      createTeacherStatusChart();
+      createFeeStatusChart();
+      createStudentGenderChart();
+      createStudentsPerClassChart();
+      createFeeCollectionTrendChart('month');
+      createFeeTypeChart();
+    }
+
+    window.onload = function() {
+      loadComponents();
+
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+
+      init();
+
+      window.addEventListener('focus', () => { refreshData(); init(); });
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) { refreshData(); init(); }
+      });
+      window.addEventListener('pageshow', () => { refreshData(); init(); });
+    };
+  </script>
+</body>
+</html>

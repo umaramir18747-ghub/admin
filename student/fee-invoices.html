@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – My Fee Invoices</title>
+   <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <main class="main-panel">
+      <div class="page-header">
+        <h1><i class="fas fa-file-invoice-dollar" style="color:#2563eb;"></i> My Fee Invoices</h1>
+        
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-user-graduate"></i> Fee Summary
+        </div>
+        <div class="class-info-grid">
+          <div class="class-info-item">
+            <label><i class="fas fa-id-card"></i> Registration Number</label>
+            <span id="regNumberDisplay">—</span>
+          </div>
+          <div class="class-info-item">
+            <label><i class="fas fa-file-invoice"></i> Total Invoices</label>
+            <span id="totalCount">0</span>
+          </div>
+          <div class="class-info-item pending">
+            <label><i class="fas fa-clock"></i> Pending</label>
+            <span id="pendingCount">0</span>
+          </div>
+          <div class="class-info-item paid">
+            <label><i class="fas fa-check-circle"></i> Paid</label>
+            <span id="paidCount">0</span>
+          </div>
+          <div class="class-info-item due">
+            <label><i class="fas fa-sack-dollar"></i> Total Due (PKR)</label>
+            <span id="totalDue">0</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">
+          <i class="fas fa-list"></i> Fee Invoices
+        </div>
+
+        <div class="filters-row">
+          <div class="search-wrap">
+            <i class="fas fa-search"></i>
+            <input type="text" id="searchInput" placeholder="Search by fee type or month...">
+          </div>
+          <select id="statusFilter">
+            <option value="">All Invoices</option>
+            <option value="Unpaid">Pending</option>
+            <option value="Paid">Paid</option>
+          </select>
+        </div>
+
+        <div class="result-table-wrap">
+          <table class="result-table">
+            <thead>
+              <tr>
+                <th>Fee Type</th>
+                <th>Fee Month</th>
+                <th>Amount (PKR)</th>
+                <th>Due Date</th>
+                <th>Status</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody id="invoiceTableBody"></tbody>
+          </table>
+        </div>
+        <div id="emptyState" style="display:none" class="empty-state">
+          <i class="fas fa-inbox"></i>
+          <p>No invoices found.</p>
+        </div>
+      </div>
+    </main>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h2><i class="fas fa-receipt"></i> Payment Receipt</h2>
+        <button class="modal-close" onclick="closeReceiptModal()"><i class="fas fa-times"></i></button>
+      </div>
+      <div class="modal-body" id="receiptContent"></div>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script src="fee-invoices.js"></script>
+</body>
+</html>

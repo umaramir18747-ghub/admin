@@ -1,0 +1,480 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – View Fee Details</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <link rel="stylesheet" href="fee.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <div class="app-container">
+      <main class="main-panel">
+        <div class="page-header">
+          <h1><i class="fas fa-file-invoice-dollar"></i> View Fee Details</h1>
+          <p>Complete ledger of all student fee records. Filter by payment status, inspect student invoices, and generate official receipts.</p>
+        </div>
+
+        <!-- Summary KPIs -->
+        <div class="form-grid-3cols" style="margin-bottom: 24px;">
+          <div class="card" style="padding:18px 24px; margin-bottom:0;">
+            <div style="font-size:13px; color:#64748b; font-weight:600;"><i class="fas fa-layer-group" style="color:#2563eb;"></i> Total Records</div>
+            <div style="font-size:24px; font-weight:700; color:#1e293b; margin-top:4px;" id="statTotalRecords">0</div>
+          </div>
+          <div class="card" style="padding:18px 24px; margin-bottom:0;">
+            <div style="font-size:13px; color:#16a34a; font-weight:600;"><i class="fas fa-check-circle" style="color:#16a34a;"></i> Total Paid (Collected)</div>
+            <div style="font-size:24px; font-weight:700; color:#15803d; margin-top:4px;" id="statTotalPaid">PKR 0</div>
+          </div>
+          <div class="card" style="padding:18px 24px; margin-bottom:0;">
+            <div style="font-size:13px; color:#dc2626; font-weight:600;"><i class="fas fa-clock" style="color:#dc2626;"></i> Outstanding Unpaid</div>
+            <div style="font-size:24px; font-weight:700; color:#b91c1c; margin-top:4px;" id="statTotalUnpaid">PKR 0</div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">
+              <i class="fas fa-list"></i> All Fee Records
+            </div>
+            <span class="badge-counter" id="recordCountBadge">0 Records</span>
+          </div>
+
+          <div class="filters-row">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="searchInput" placeholder="Search by name, reg no, receipt no..." oninput="applyFilters()">
+            </div>
+            <select class="filter-select" id="classFilter" onchange="applyFilters()">
+              <option value="">All Classes</option>
+            </select>
+            <select class="filter-select" id="feeTypeFilter" onchange="applyFilters()">
+              <option value="">All Fee Types</option>
+            </select>
+            <select class="filter-select" id="feeMonthFilter" onchange="applyFilters()">
+              <option value="">All Fee Months</option>
+            </select>
+            <select class="filter-select" id="statusFilter" onchange="applyFilters()">
+              <option value="">All Statuses</option>
+              <option value="Paid">Paid</option>
+              <option value="Unpaid">Unpaid</option>
+            </select>
+          </div>
+
+          <div class="student-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reg. No.</th>
+                  <th>Student Name</th>
+                  <th>Fee Month</th>
+                  <th>Amount</th>
+                  <th>Status</th>
+                  <th>Receipt No.</th>
+                  <th>Payment Date</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="detailsTableBody"></tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" id="receiptModal">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3><i class="fas fa-receipt"></i> Official Fee Receipt</h3>
+        <button class="modal-close" onclick="closeReceiptModal()">&times;</button>
+      </div>
+      <div class="modal-body" id="receiptContent"></div>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script>
+    // ================= COMPONENT LOADING =================
+    function loadComponents() {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => { document.getElementById('header-placeholder').innerHTML = data; })
+        .catch(err => console.error('Error loading header:', err));
+
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => { document.getElementById('sidebar-placeholder').innerHTML = data; })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    window.addEventListener('load', function() {
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+      buildFilters();
+      applyFilters();
+    });
+
+    // ================= STORAGE HELPERS =================
+    function loadFeeRecords() {
+      try {
+        const stored = localStorage.getItem('messFeeRecords');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) { return []; }
+    }
+
+    function saveFeeRecords(records) {
+      localStorage.setItem('messFeeRecords', JSON.stringify(records));
+    }
+
+    function buildFilters() {
+      const records = loadFeeRecords();
+
+      const classes = [...new Set(records.map(r => r.className).filter(Boolean))].sort();
+      document.getElementById('classFilter').innerHTML =
+        '<option value="">All Classes</option>' +
+        classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+      const feeTypes = [...new Set(records.map(r => r.feeType).filter(Boolean))].sort();
+      document.getElementById('feeTypeFilter').innerHTML =
+        '<option value="">All Fee Types</option>' +
+        feeTypes.map(f => `<option value="${f}">${f}</option>`).join('');
+
+      const feeMonths = [...new Set(records.map(r => r.feeMonth).filter(Boolean))].sort();
+      document.getElementById('feeMonthFilter').innerHTML =
+        '<option value="">All Fee Months</option>' +
+        feeMonths.map(m => `<option value="${m}">${m}</option>`).join('');
+    }
+
+    function applyFilters() {
+      const search      = document.getElementById('searchInput').value.toLowerCase().trim();
+      const classVal    = document.getElementById('classFilter').value;
+      const feeTypeVal  = document.getElementById('feeTypeFilter').value;
+      const feeMonthVal = document.getElementById('feeMonthFilter').value;
+      const statusVal   = document.getElementById('statusFilter').value;
+
+      let records = loadFeeRecords();
+
+      const totalPaidAmt   = records.filter(r => r.status === 'Paid').reduce((s, r) => s + (r.amount || 0), 0);
+      const totalUnpaidAmt = records.filter(r => r.status === 'Unpaid').reduce((s, r) => s + (r.amount || 0), 0);
+      document.getElementById('statTotalRecords').textContent = records.length;
+      document.getElementById('statTotalPaid').textContent = `PKR ${totalPaidAmt.toLocaleString()}`;
+      document.getElementById('statTotalUnpaid').textContent = `PKR ${totalUnpaidAmt.toLocaleString()}`;
+
+      if (classVal)    records = records.filter(r => r.className === classVal);
+      if (feeTypeVal)  records = records.filter(r => r.feeType === feeTypeVal);
+      if (feeMonthVal) records = records.filter(r => r.feeMonth === feeMonthVal);
+      if (statusVal)   records = records.filter(r => r.status === statusVal);
+
+      if (search) {
+        records = records.filter(r =>
+          (r.studentName && r.studentName.toLowerCase().includes(search)) ||
+          (r.regNo && r.regNo.toLowerCase().includes(search)) ||
+          (r.receiptNo && r.receiptNo.toLowerCase().includes(search)) ||
+          (r.feeType && r.feeType.toLowerCase().includes(search))
+        );
+      }
+
+      renderTable(records);
+    }
+
+    function renderTable(records) {
+      const tbody = document.getElementById('detailsTableBody');
+      document.getElementById('recordCountBadge').textContent = `${records.length} Records`;
+
+      if (records.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align:center; padding:36px; color:#94a3b8;">
+              <i class="fas fa-folder-open" style="font-size:32px; color:#cbd5e1; margin-bottom:8px; display:block;"></i>
+              No fee records found matching your filters.
+            </td>
+          </tr>`;
+        return;
+      }
+
+      tbody.innerHTML = records.map(r => {
+        const isPaid = r.status === 'Paid';
+        const statusBadge = isPaid
+          ? `<span class="status-pill status-paid"><i class="fas fa-check-circle"></i> Paid</span>`
+          : `<span class="status-pill status-unpaid"><i class="fas fa-clock"></i> Unpaid</span>`;
+
+        const receiptBtn = isPaid
+          ? `<button class="btn-pill" onclick="openReceiptModal('${r.id}')" title="Print/View Receipt" style="color:#2563eb;"><i class="fas fa-receipt"></i> Receipt</button>`
+          : `<span style="color:#94a3b8; font-size:12.5px;">—</span>`;
+
+        return `
+          <tr>
+            <td><strong>${r.regNo}</strong></td>
+            <td>${r.studentName}</td>
+            <td>${r.feeMonth}</td>
+            <td><strong>PKR ${(r.amount || 0).toLocaleString()}</strong></td>
+            <td>${statusBadge}</td>
+            <td><code style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-weight:600;">${r.receiptNo || '—'}</code></td>
+            <td style="font-size:13px; color:#64748b;">${r.paidDateTime || '—'}</td>
+            <td style="text-align:right;">
+              <div style="display:flex; justify-content:flex-end; gap:6px;">
+                ${receiptBtn}
+                <button class="btn-pill danger" onclick="deleteRecord('${r.id}')" title="Delete Record">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>`;
+      }).join('');
+    }
+
+    function openReceiptModal(recordId) {
+      const records = loadFeeRecords();
+      const r = records.find(x => x.id === recordId);
+      if (!r || r.status !== 'Paid') {
+        showToast('⚠️ Receipt only available for Paid fees');
+        return;
+      }
+
+      document.getElementById('receiptContent').innerHTML = `
+        <div class="receipt-doc">
+          <div class="receipt-header-school">
+            <h4>Muhammad Education Institute</h4>
+            <p style="font-size:12.5px; color:#64748b;">Official Fee Payment Receipt</p>
+          </div>
+          <div class="receipt-row"><span>Receipt Number:</span><strong>${r.receiptNo}</strong></div>
+          <div class="receipt-row"><span>Payment Date:</span><strong>${r.paidDateTime}</strong></div>
+          <div class="receipt-row"><span>Student Name:</span><strong>${r.studentName}</strong></div>
+          <div class="receipt-row"><span>Registration No:</span><strong>${r.regNo}</strong></div>
+          <div class="receipt-row"><span>Class:</span><strong>${r.className}</strong></div>
+          <div class="receipt-row"><span>Fee Type:</span><strong>${r.feeType}</strong></div>
+          <div class="receipt-row"><span>Fee Month:</span><strong>${r.feeMonth}</strong></div>
+          <div class="receipt-total">
+            <span>Amount Paid:</span>
+            <span>PKR ${(r.amount || 0).toLocaleString()}</span>
+          </div>
+          <div style="text-align:center; margin-top:16px;">
+            <button class="btn btn-primary" onclick="downloadReceiptPDF('${r.id}')" style="font-size:13px; padding:6px 14px;">
+              <i class="fas fa-download"></i> Download PDF
+            </button>
+          </div>
+        </div>`;
+
+      document.getElementById('receiptModal').classList.add('open');
+    }
+
+    function closeReceiptModal() {
+      document.getElementById('receiptModal').classList.remove('open');
+    }
+
+    // ================= PDF DOWNLOAD (Simplified, Flat, Logo) =================
+    function downloadReceiptPDF(recordId) {
+      const records = loadFeeRecords();
+      const r = records.find(x => x.id === recordId);
+      if (!r || r.status !== 'Paid') {
+        showToast('⚠️ Receipt only available for Paid fees');
+        return;
+      }
+
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF({ unit: 'mm', format: [80, 230] });
+
+      const W = 80;
+      const LM = 6;
+      const RM = 74;
+      const CX = W / 2;
+      const CONTENT_W = RM - LM;
+
+      const C = {
+        primary:   [37, 99, 235],
+        primaryD:  [29, 78, 216],
+        primaryL:  [239, 246, 255],
+        text:      [15, 23, 42],
+        muted:     [100, 116, 139],
+        light:     [148, 163, 184],
+        border:    [226, 232, 240],
+        success:   [22, 163, 74],
+        successBg: [220, 252, 231]
+      };
+
+      // ---------- helper: draw logo or fallback ----------
+      const drawLogo = (cb) => {
+        const img = new Image();
+        img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          // Fit logo inside 24x24mm box, centered
+          const maxW = 24, maxH = 24;
+          const ratio = Math.min(maxW / img.width, maxH / img.height);
+          const lw = img.width * ratio;
+          const lh = img.height * ratio;
+          try {
+            doc.addImage(img, 'PNG', CX - lw / 2, 8, lw, lh);
+          } catch (e) {
+            console.warn('Logo addImage failed:', e);
+          }
+          cb(8 + lh + 4); // return next y
+        };
+        img.onerror = () => {
+          console.warn('logo.png not found — skipping logo');
+          cb(12); // fallback y if logo fails
+        };
+        img.src = 'logo.png';
+      };
+
+      // ---------- build everything after logo loads ----------
+      drawLogo((startY) => {
+        let y = startY;
+
+        // ---------- INSTITUTE NAME ----------
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(11.5);
+        doc.setTextColor(...C.text);
+        doc.text('MUHAMMAD EDUCATION', CX, y, { align: 'center' });
+        y += 4.5;
+        doc.text('INSTITUTE', CX, y, { align: 'center' });
+        y += 5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...C.muted);
+        doc.text('Official Fee Payment Receipt', CX, y, { align: 'center' });
+        y += 3.5;
+        doc.setFontSize(7);
+        doc.setTextColor(...C.light);
+        doc.text('Ph: 0300-1234567', CX, y, { align: 'center' });
+        y += 6;
+
+        // ---------- STATUS RIBBON (flat, centered) ----------
+        doc.setFillColor(...C.successBg);
+        doc.rect(LM, y, CONTENT_W, 8, 'F');
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(8.5);
+        doc.setTextColor(...C.success);
+        doc.text('PAYMENT CONFIRMED', CX, y + 5.2, { align: 'center' });
+        y += 13;
+
+        // ---------- META CARD (flat) ----------
+        const cardPad = 4;
+        const rowH = 7;
+        const metaRows = [
+          ['Receipt No.',   r.receiptNo || '—'],
+          ['Payment Date',  r.paidDateTime || '—'],
+          ['Student Name',  r.studentName || '—'],
+          ['Registration',  r.regNo || '—'],
+          ['Class',         r.className || '—'],
+          ['Fee Type',      r.feeType || '—'],
+          ['Fee Month',     r.feeMonth || '—']
+        ];
+        const cardH = metaRows.length * rowH + cardPad * 2;
+
+        // Flat background
+        doc.setFillColor(248, 250, 252);
+        doc.rect(LM, y, CONTENT_W, cardH, 'F');
+
+        // Flat border
+        doc.setDrawColor(...C.border);
+        doc.setLineWidth(0.3);
+        doc.rect(LM, y, CONTENT_W, cardH, 'S');
+
+        let ry = y + cardPad + 2;
+        metaRows.forEach(([label, value], idx) => {
+          doc.setFont('helvetica', 'normal');
+          doc.setFontSize(7.5);
+          doc.setTextColor(...C.muted);
+          doc.text(label, LM + cardPad, ry);
+
+          doc.setFont('helvetica', 'bold');
+          doc.setFontSize(8.5);
+          doc.setTextColor(...C.text);
+          let v = String(value);
+          if (v.length > 26) v = v.substring(0, 24) + '…';
+          doc.text(v, RM - cardPad, ry, { align: 'right' });
+
+          if (idx < metaRows.length - 1) {
+            doc.setDrawColor(235, 240, 246);
+            doc.setLineWidth(0.15);
+            doc.line(LM + cardPad, ry + 2.5, RM - cardPad, ry + 2.5);
+          }
+          ry += rowH;
+        });
+        y += cardH + 8;
+
+        // ---------- AMOUNT CARD (flat) ----------
+        const amtH = 20;
+        doc.setFillColor(...C.primary);
+        doc.rect(LM, y, CONTENT_W, amtH, 'F');
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7.5);
+        doc.setTextColor(191, 219, 254);
+        doc.text('TOTAL AMOUNT PAID', CX, y + 6.5, { align: 'center' });
+
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(15);
+        doc.setTextColor(255, 255, 255);
+        doc.text('PKR ' + (r.amount || 0).toLocaleString(), CX, y + 14.5, { align: 'center' });
+        y += amtH + 10;
+
+        // ---------- SIGNATURE LINE ----------
+        doc.setDrawColor(...C.light);
+        doc.setLineWidth(0.3);
+        doc.line(RM - 30, y + 6, RM, y + 6);
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(7);
+        doc.setTextColor(...C.muted);
+        doc.text('Authorized Signature', RM - 15, y + 9.5, { align: 'center' });
+        y += 15;
+
+        // ---------- DASHED DIVIDER ----------
+        doc.setDrawColor(...C.border);
+        doc.setLineWidth(0.3);
+        doc.setLineDashPattern([1.2, 1.2], 0);
+        doc.line(LM, y, RM, y);
+        doc.setLineDashPattern([], 0);
+        y += 5;
+
+        // ---------- FOOTER ----------
+        doc.setFont('helvetica', 'bold');
+        doc.setFontSize(7.5);
+        doc.setTextColor(...C.primaryD);
+        doc.text('Thank you for your payment!', CX, y, { align: 'center' });
+        y += 3.5;
+
+        doc.setFont('helvetica', 'normal');
+        doc.setFontSize(6.5);
+        doc.setTextColor(...C.light);
+        doc.text('This is a computer-generated receipt.', CX, y, { align: 'center' });
+        y += 3;
+        doc.text('Powered by MEI Fee Management System', CX, y, { align: 'center' });
+
+        // ---------- SAVE ----------
+        const safeReg = (r.regNo || 'student').replace(/[^a-z0-9]/gi, '_');
+        const fileName = `Fee_Receipt_${r.receiptNo || r.id}_${safeReg}.pdf`;
+        doc.save(fileName);
+
+        showToast('📄 Receipt PDF downloaded');
+      });
+    }
+
+    function deleteRecord(recordId) {
+      if (!confirm('Are you sure you want to delete this fee record? This action cannot be undone.')) return;
+      let records = loadFeeRecords();
+      records = records.filter(r => r.id !== recordId);
+      saveFeeRecords(records);
+      showToast('🗑️ Record deleted');
+      buildFilters();
+      applyFilters();
+    }
+  </script>
+</body>
+</html>

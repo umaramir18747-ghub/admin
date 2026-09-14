@@ -1,0 +1,280 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – Admin Dashboard</title>
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <link rel="stylesheet" href="../dashboard.css">
+</head>
+<body>
+
+  <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Main Content -->
+    <main class="main-panel">
+      <!-- Watermark Logo -->
+      <div class="watermark" aria-hidden="true"></div>
+
+      <!-- Welcome Banner + Profile Photo, in one row -->
+      <div class="welcome-photo-row">
+        <!-- Welcome Banner (greeting + quick links) -->
+        <section class="welcome-banner">
+          <h1 class="welcome-title">Welcome Back, <span>Muhammad Umar</span></h1>
+          <div class="welcome-role">Administrator Dashboard</div>
+          <p class="welcome-text">Create Class, Enroll Students in Class, Enroll Teachers and Generate Reports from one place.</p>
+
+          <div class="quick-links-grid">
+            <a href="student-details.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-admissions"><i class="fas fa-user-check"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Students</div>
+                <div class="quick-link-subtitle">View Details</div>
+              </div>
+            </a>
+            <a href="class-details.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-students"><i class="fas fa-chalkboard"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Classes</div>
+                <div class="quick-link-subtitle">View Details</div>
+              </div>
+            </a>
+            <a href="teacher-details.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-fees"><i class="fas fa-money-check-alt"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Teachers</div>
+                <div class="quick-link-subtitle">View Details</div>
+              </div>
+            </a>
+            <a href="reports_analytics.html" class="quick-link-card">
+              <div class="quick-link-icon icon-ql-reports"><i class="fas fa-chart-bar"></i></div>
+              <div class="quick-link-info">
+                <div class="quick-link-title">Reports</div>
+                <div class="quick-link-subtitle">Make Reports</div>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <!-- Divider -->
+        <div class="welcome-divider" aria-hidden="true"></div>
+
+        <!-- Profile Picture Frame -->
+        <section class="profile-card">
+  <div class="passport-frame">
+    <img
+      src="image.png"
+      alt="Muhammad Umar"
+      onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';"
+    />
+
+    <div class="profile-fallback">
+      <i class="fa fa-user-tie"></i>
+    </div>
+  </div>
+
+  <div class="profile-name">Muhammad Umar</div>
+  <div class="profile-role">Admin</div>
+
+  <div class="profile-status">
+    <span class="status-dot"></span>Online
+  </div>
+</section>
+      </div>
+
+      <!-- Admission Details -->
+      <div class="dashboard-section">
+        <div class="section-title"><i class="fas fa-user-graduate"></i> Admission Details</div>
+        <div class="cards-grid">
+          <div class="stat-card">
+            <div class="card-icon icon-students"><i class="fas fa-users"></i></div>
+            <div class="card-info"><div class="card-label">Total Students</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-teachers"><i class="fas fa-user-tie"></i></div>
+            <div class="card-info"><div class="card-label">Total Teachers</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-active-c"><i class="fas fa-door-open"></i></div>
+            <div class="card-info"><div class="card-label">Active Classes</div><div class="card-value">0</div></div>
+          </div>
+          
+          <div class="stat-card">
+            <div class="card-icon icon-active-s"><i class="fas fa-user-check"></i></div>
+            <div class="card-info"><div class="card-label">Active Students</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-active-t"><i class="fas fa-graduation-cap"></i></div>
+            <div class="card-info"><div class="card-label">Graduated Students</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-classes"><i class="fas fa-chalkboard"></i></div>
+            <div class="card-info"><div class="card-label">Graduated Classes</div><div class="card-value">0</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fee Details -->
+      <div class="dashboard-section">
+        <div class="section-title"><i class="fas fa-money-bill-wave"></i> Fee Details</div>
+        <div class="cards-grid">
+          <div class="stat-card">
+            <div class="card-icon icon-paid"><i class="fas fa-check-circle"></i></div>
+            <div class="card-info"><div class="card-label">Paid Payments</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-unpaid"><i class="fas fa-times-circle"></i></div>
+            <div class="card-info"><div class="card-label">Unpaid Payments</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-due"><i class="fas fa-exclamation-circle"></i></div>
+            <div class="card-info"><div class="card-label">Due Payments</div><div class="card-value">0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-received"><i class="fas fa-hand-holding-usd"></i></div>
+            <div class="card-info"><div class="card-label">Amount Received</div><div class="card-value">PKR 0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-remaining"><i class="fas fa-hourglass-half"></i></div>
+            <div class="card-info"><div class="card-label">Amount Remaining</div><div class="card-value">PKR 0</div></div>
+          </div>
+          <div class="stat-card">
+            <div class="card-icon icon-total-amt"><i class="fas fa-wallet"></i></div>
+            <div class="card-info"><div class="card-label">Total Amount</div><div class="card-value">PKR 0</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Help Section -->
+      <section class="help-section">
+        <div class="section-title"><i class="fas fa-circle-info"></i> Help & Guidance</div>
+        <p class="help-text">
+          Effortlessly <strong>enroll students & teachers</strong>, build classes and generate detailed reports — all with zero friction. Use the admin panel to onboard new learners and educators. Complete transparency, total control.
+        </p>
+      </section>
+
+    </main>
+  </div>
+
+  <script src="../components.js"></script>
+
+  <script>
+    // Load Header and Sidebar
+    function loadComponents() {
+      // Load Header
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading header:', err));
+
+      // Load Sidebar
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('sidebar-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    // Initialize everything after components are loaded
+    window.onload = function() {
+      loadComponents();
+      
+      // Give time for HTML to load then initialize JS
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+
+      renderDashboardStats();
+
+      // Re-render whenever user comes back to this tab
+      window.addEventListener('focus', renderDashboardStats);
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) renderDashboardStats();
+      });
+      window.addEventListener('pageshow', renderDashboardStats);
+    };
+
+    // ===== Storage Helpers =====
+    function loadFromStorage(key) {
+      const stored = localStorage.getItem(key);
+      return stored ? JSON.parse(stored) : [];
+    }
+
+    // Find a stat card by its label text and set its value
+    function setStatByLabel(labelText, value) {
+      document.querySelectorAll('.stat-card').forEach(card => {
+        const label = card.querySelector('.card-label');
+        if (label && label.textContent.trim() === labelText) {
+          const valueEl = card.querySelector('.card-value');
+          if (valueEl) valueEl.textContent = value;
+        }
+      });
+    }
+
+    function renderDashboardStats() {
+      const students = loadFromStorage('messStudents');
+      const teachers = loadFromStorage('messTeachers');
+      const classes = loadFromStorage('messClasses');
+      const feeRecords = loadFromStorage('messFeeRecords');
+
+      // Build a set of classIds that are Graduated
+      const graduatedClassIds = new Set(
+        classes.filter(c => c.status === 'Graduated').map(c => c.id)
+      );
+
+      // A student is "Graduated" if their class is Graduated
+      const graduatedStudents = students.filter(s => graduatedClassIds.has(s.classId)).length;
+
+      // A student is "Active" ONLY if:
+      //   - their personal status is 'Active', AND
+      //   - their class is NOT Graduated
+      const activeStudents = students.filter(s => 
+        s.status === 'Active' && !graduatedClassIds.has(s.classId)
+      ).length;
+
+      const activeClasses = classes.filter(c => c.status === 'Active').length;
+      const graduatedClasses = classes.filter(c => c.status === 'Graduated').length;
+
+      setStatByLabel('Total Students', students.length);
+      setStatByLabel('Total Teachers', teachers.length);
+      setStatByLabel('Graduated Classes', graduatedClasses);
+      setStatByLabel('Active Students', activeStudents);
+      setStatByLabel('Graduated Students', graduatedStudents);
+      setStatByLabel('Active Classes', activeClasses);
+
+      // ===== FEE STATS =====
+      const paidRecords = feeRecords.filter(r => r.status === 'Paid');
+      const unpaidRecords = feeRecords.filter(r => r.status === 'Unpaid');
+
+      // "Due Payments" = unpaid records whose dueDate has already passed (overdue)
+      const today = new Date().toISOString().slice(0, 10);
+      const dueRecords = unpaidRecords.filter(r => r.dueDate && r.dueDate <= today);
+
+      const amountReceived = paidRecords.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+      const amountRemaining = unpaidRecords.reduce((sum, r) => sum + (Number(r.amount) || 0), 0);
+      const totalAmount = amountReceived + amountRemaining;
+
+      setStatByLabel('Paid Payments', paidRecords.length);
+      setStatByLabel('Unpaid Payments', unpaidRecords.length);
+      setStatByLabel('Due Payments', dueRecords.length);
+      setStatByLabel('Amount Received', `PKR ${amountReceived.toLocaleString()}`);
+      setStatByLabel('Amount Remaining', `PKR ${amountRemaining.toLocaleString()}`);
+      setStatByLabel('Total Amount', `PKR ${totalAmount.toLocaleString()}`);
+    }
+  </script>
+</body>
+</html>

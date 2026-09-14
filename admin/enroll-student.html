@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – Enroll Student</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <link rel="stylesheet" href="enroll.css">
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <main class="main-panel">
+     <div class="page-header">
+  <div class="header-content">
+    <h1>
+      <i class="fas fa-user-graduate icon"></i>
+      <span id="pageTitleText">Enroll Student</span>
+    </h1>
+    <p id="pageSubtitle">Register a new student, assign to a class with automatic registration sequencing, and enter guardian details.</p>
+  </div>
+</div>
+
+      <form id="studentForm" onsubmit="handleStudentSubmit(event)">
+        <!-- 1. Class Selection -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-chalkboard"></i> Class Assignment
+            <span id="classLockNotice" style="display:none; font-size:12px; font-weight:600; color:#b45309; background:#fef3c7; padding:4px 10px; border-radius:6px; margin-left:auto;">
+              <i class="fas fa-lock"></i> Class and Reg No. locked in edit mode
+            </span>
+          </div>
+          <div class="form-grid-5cols">
+            <div class="form-group">
+              <label><i class="fas fa-chalkboard-teacher"></i> Class Name <span class="req">*</span></label>
+              <select class="form-control" id="classSelect" onchange="onClassSelected()" required>
+                <option value="">-- Select Class --</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-id-card"></i> Class ID</label>
+              <input type="text" class="form-control" id="s_classId" disabled placeholder="Class ID">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-calendar-alt"></i> Session</label>
+              <input type="text" class="form-control" id="s_session" disabled placeholder="Session">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-layer-group"></i> Grade</label>
+              <input type="text" class="form-control" id="s_grade" disabled placeholder="Grade">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-tags"></i> Section</label>
+              <input type="text" class="form-control" id="s_section" disabled placeholder="Section">
+            </div>
+          </div>
+        </div>
+
+        <!-- 2. Student Personal Information -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-user"></i> Student Personal Details
+          </div>
+
+          <div class="photo-section">
+            <div class="photo-container">
+              <div class="photo-heading">Student Photo</div>
+              <div class="photo-frame" id="photoFrame" onclick="document.getElementById('photoInput').click()">
+                <i class="fas fa-camera"></i>
+                <img id="photoPreview" alt="Student Photo">
+              </div>
+              <div class="file-name" id="fileName">Click to upload photo</div>
+              <input type="file" id="photoInput" accept="image/*" style="display:none" onchange="handlePhotoSelect(event)">
+            </div>
+
+            <div style="flex:1;">
+              <div class="form-grid-4cols">
+                <div class="form-group">
+                  <label><i class="fas fa-hashtag"></i> Reg. Number <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="regNo" placeholder="Auto-generated based on class" readonly required>
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-user"></i> Student Name <span class="req">*</span></label>
+                  <input type="text" class="form-control" id="studentName" placeholder="Full name" required>
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-user-tie"></i> Father Name</label>
+                  <input type="text" class="form-control" id="fatherName" placeholder="Father name">
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-phone"></i> Phone Number</label>
+                  <input type="text" class="form-control" id="phone" placeholder="0300-1234567" maxlength="12">
+                </div>
+
+                <div class="form-group">
+                  <label><i class="fas fa-id-card"></i> CNIC / B-Form</label>
+                  <input type="text" class="form-control" id="cnic" placeholder="35201-1234567-1" maxlength="15">
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-envelope"></i> Email</label>
+                  <input type="email" class="form-control" id="email" placeholder="student@example.com">
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-venus-mars"></i> Gender</label>
+                  <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="gender" value="Male" checked> Male</label>
+                    <label class="radio-label"><input type="radio" name="gender" value="Female"> Female</label>
+                  </div>
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-calendar-day"></i> Date of Birth</label>
+                  <input type="date" class="form-control" id="dob">
+                </div>
+
+                <div class="form-group">
+                  <label><i class="fas fa-globe"></i> Nationality</label>
+                  <input type="text" class="form-control" id="nationality" value="Pakistani">
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-pray"></i> Religion</label>
+                  <input type="text" class="form-control" id="religion" value="Islam">
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-sign-in-alt"></i> Joining Date</label>
+                  <input type="date" class="form-control" id="joiningDate">
+                </div>
+                <div class="form-group">
+                  <label><i class="fas fa-map-marker-alt"></i> Residential Address</label>
+                  <input type="text" class="form-control" id="address" placeholder="Address">
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 3. Guardian Information -->
+        <div class="card">
+          <div class="card-title">
+            <i class="fas fa-users"></i> Guardian Information
+          </div>
+          <div class="form-grid-5cols">
+            <div class="form-group">
+              <label><i class="fas fa-user-shield"></i> Guardian Name <span class="req">*</span></label>
+              <input type="text" class="form-control" id="guardianName" placeholder="Guardian name" required>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-heart"></i> Relationship</label>
+              <select class="form-control" id="guardianRelationship">
+                <option value="Father" selected>Father</option>
+                <option value="Mother">Mother</option>
+                <option value="Brother">Brother</option>
+                <option value="Uncle">Uncle</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-phone"></i> Guardian Phone</label>
+              <input type="text" class="form-control" id="guardianPhone" placeholder="0300-1234567" maxlength="12">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-id-card"></i> Guardian CNIC</label>
+              <input type="text" class="form-control" id="guardianCnic" placeholder="35201-1234567-1" maxlength="15">
+            </div>
+            <div class="form-group">
+              <label><i class="fas fa-briefcase"></i> Occupation</label>
+              <input type="text" class="form-control" id="guardianOccupation" placeholder="e.g. Engineer">
+            </div>
+          </div>
+
+          <div class="btn-actions">
+            <button type="submit" class="btn btn-primary" id="submitBtn">
+              <i class="fas fa-user-plus"></i> Enroll Student
+            </button>
+            <button type="button" class="btn btn-secondary" onclick="resetStudentForm()">
+              <i class="fas fa-undo"></i> Reset
+            </button>
+            <a href="student-details.html" class="btn btn-secondary">
+              <i class="fas fa-list"></i> View Student Roster
+            </a>
+            <a href="assign-fee.html" class="btn btn-secondary">
+              <i class="fas fa-money-bill-wave"></i> Assign Fee
+            </a>
+          </div>
+        </div>
+      </form>
+    </main>
+  </div>
+
+  <script src="../components.js"></script>
+  <script>
+    let editingRegNo = null;
+
+    // ================= COMPONENT LOADING (HEADER & SIDEBAR) =================
+    function loadComponents() {
+      // Load Header
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading header:', err));
+
+      // Load Sidebar
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('sidebar-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    // ================= STORAGE HELPERS =================
+    function loadClasses() {
+      try {
+        const stored = localStorage.getItem('messClasses');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function loadStudents() {
+      try {
+        const stored = localStorage.getItem('messStudents');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveStudents(students) {
+      localStorage.setItem('messStudents', JSON.stringify(students));
+    }
+
+    // ================= TOAST HELPERS =================
+    // Generic info/warning toast (uses existing .toast-msg style)
+    function showToast(msg) {
+      let t = document.createElement('div');
+      t.className = 'toast-msg';
+      t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2400);
+    }
+
+    // Success toast (green style) — used for enrollment/update confirmations
+    function showSuccessToast(msg) {
+      let t = document.createElement('div');
+      t.className = 'toast-msg toast-success';
+      t.innerHTML = `<i class="fas fa-check-circle"></i> ${msg}`;
+      document.body.appendChild(t);
+      setTimeout(() => t.remove(), 2600);
+    }
+
+    // Initialize everything after components are loaded
+    window.addEventListener('load', function() {
+      loadComponents();
+
+      // Give time for HTML to load then initialize JS
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+
+      // Existing page initialization
+      populateClassDropdown();
+      setDefaultDates();
+
+      const params = new URLSearchParams(window.location.search);
+      const editReg = params.get('edit');
+      if (editReg) {
+        enterEditMode(editReg);
+      }
+    });
+
+    function setDefaultDates() {
+      const today = new Date().toISOString().split('T')[0];
+      const jInput = document.getElementById('joiningDate');
+      if (!jInput.value) jInput.value = today;
+    }
+
+    function populateClassDropdown() {
+      const select = document.getElementById('classSelect');
+      const classes = loadClasses();
+      select.innerHTML = '<option value="">-- Select Class --</option>' +
+        classes.map(c => `<option value="${c.id}">${c.name} (${c.grade} - ${c.section})</option>`).join('');
+    }
+
+    function onClassSelected() {
+      const select = document.getElementById('classSelect');
+      const classes = loadClasses();
+      const cls = classes.find(c => c.id === select.value);
+
+      if (!cls) {
+        document.getElementById('s_classId').value = '';
+        document.getElementById('s_session').value = '';
+        document.getElementById('s_grade').value = '';
+        document.getElementById('s_section').value = '';
+        if (!editingRegNo) document.getElementById('regNo').value = '';
+        return;
+      }
+
+      document.getElementById('s_classId').value = cls.id;
+      document.getElementById('s_session').value = cls.session || '';
+      document.getElementById('s_grade').value = cls.grade || '';
+      document.getElementById('s_section').value = cls.section || '';
+
+      if (!editingRegNo) {
+        generateStudentRegNo(cls);
+      }
+    }
+
+    function generateStudentRegNo(cls) {
+      let sessionYear = '2026';
+      if (cls.session && cls.session.includes('-')) {
+        sessionYear = cls.session.split('-')[1].replace(/\D/g, '') || '2026';
+      }
+      const section = (cls.section || 'A').toUpperCase().replace(/[^A-Z0-9]/g, '');
+      const prefix = `S.MEI-${sessionYear}-${section}`;
+
+      const allStudents = loadStudents();
+      const classStudents = allStudents.filter(s => s.classId === cls.id);
+      const nextSeq = String(classStudents.length + 1).padStart(2, '0');
+
+      document.getElementById('regNo').value = `${prefix}-${nextSeq}`;
+    }
+
+    function handlePhotoSelect(e) {
+      const file = e.target.files[0];
+      if (file) {
+        document.getElementById('fileName').textContent = file.name;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          const img = document.getElementById('photoPreview');
+          img.src = ev.target.result;
+          document.getElementById('photoFrame').classList.add('has-image');
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function enterEditMode(regNo) {
+      const students = loadStudents();
+      const s = students.find(x => x.regNo.toLowerCase() === regNo.toLowerCase());
+      if (!s) {
+        showToast('⚠️ Student not found');
+        return;
+      }
+
+      editingRegNo = regNo;
+      document.getElementById('pageTitleText').textContent = 'Edit Student Details';
+      document.getElementById('pageSubtitle').textContent = `Updating information for ${s.studentName} (${s.regNo}).`;
+      document.getElementById('submitBtn').innerHTML = '<i class="fas fa-save"></i> Update Student';
+      document.getElementById('classLockNotice').style.display = 'inline-block';
+
+      // Select and lock class
+      const classSelect = document.getElementById('classSelect');
+      classSelect.value = s.classId;
+      classSelect.disabled = true;
+      onClassSelected();
+
+      document.getElementById('regNo').value = s.regNo;
+      document.getElementById('studentName').value = s.studentName || '';
+      document.getElementById('fatherName').value = s.fatherName || '';
+      document.getElementById('phone').value = s.phoneNumber || '';
+      document.getElementById('cnic').value = s.cnic || '';
+      document.getElementById('email').value = s.email || '';
+      document.getElementById('dob').value = s.dob || '';
+      document.getElementById('nationality').value = s.nationality || 'Pakistani';
+      document.getElementById('religion').value = s.religion || 'Islam';
+      document.getElementById('joiningDate').value = s.joiningDate || '';
+      document.getElementById('address').value = s.address || '';
+
+      if (s.gender) {
+        const rad = document.querySelector(`input[name="gender"][value="${s.gender}"]`);
+        if (rad) rad.checked = true;
+      }
+
+      document.getElementById('guardianName').value = s.guardianName || '';
+      document.getElementById('guardianRelationship').value = s.guardianRelationship || 'Father';
+      document.getElementById('guardianPhone').value = s.guardianPhone || '';
+      document.getElementById('guardianCnic').value = s.guardianCnic || '';
+      document.getElementById('guardianOccupation').value = s.guardianOccupation || '';
+
+      if (s.photoUrl) {
+        document.getElementById('photoPreview').src = s.photoUrl;
+        document.getElementById('photoFrame').classList.add('has-image');
+        document.getElementById('fileName').textContent = 'Enrolled photo';
+      }
+    }
+
+    function handleStudentSubmit(e) {
+      e.preventDefault();
+
+      const studentName = document.getElementById('studentName').value.trim();
+      const guardianName = document.getElementById('guardianName').value.trim();
+
+      if (!studentName || !guardianName) {
+        showToast('⚠️ Student Name and Guardian Name are required');
+        return;
+      }
+
+      const students = loadStudents();
+
+      // EDIT MODE
+      if (editingRegNo) {
+        const idx = students.findIndex(s => s.regNo.toLowerCase() === editingRegNo.toLowerCase());
+        if (idx === -1) {
+          showToast('⚠️ Student record not found');
+          return;
+        }
+
+        const existing = students[idx];
+        const genderVal = document.querySelector('input[name="gender"]:checked')?.value || 'Male';
+        const photoSrc = document.getElementById('photoPreview').src;
+
+        students[idx] = {
+          ...existing,
+          studentName: studentName,
+          fatherName: document.getElementById('fatherName').value.trim(),
+          phoneNumber: document.getElementById('phone').value.trim(),
+          cnic: document.getElementById('cnic').value.trim(),
+          email: document.getElementById('email').value.trim(),
+          gender: genderVal,
+          dob: document.getElementById('dob').value,
+          nationality: document.getElementById('nationality').value.trim(),
+          religion: document.getElementById('religion').value.trim(),
+          joiningDate: document.getElementById('joiningDate').value,
+          address: document.getElementById('address').value.trim(),
+          guardianName: guardianName,
+          guardianRelationship: document.getElementById('guardianRelationship').value,
+          guardianPhone: document.getElementById('guardianPhone').value.trim(),
+          guardianCnic: document.getElementById('guardianCnic').value.trim(),
+          guardianOccupation: document.getElementById('guardianOccupation').value.trim(),
+          photoUrl: (photoSrc && photoSrc.startsWith('data:')) ? photoSrc : existing.photoUrl
+        };
+
+        saveStudents(students);
+        showSuccessToast(`Student "${studentName}" is updated successfully`);
+        setTimeout(() => {
+          window.location.href = 'student-details.html';
+        }, 900);
+        return;
+      }
+
+      // CREATE MODE
+      const classId = document.getElementById('classSelect').value;
+      const classes = loadClasses();
+      const cls = classes.find(c => c.id === classId);
+
+      if (!cls) {
+        showToast('⚠️ Please select a valid class');
+        return;
+      }
+
+      const regNo = document.getElementById('regNo').value.trim();
+      if (!regNo) {
+        showToast('⚠️ Registration Number missing');
+        return;
+      }
+
+      if (students.some(s => s.regNo.toLowerCase() === regNo.toLowerCase())) {
+        showToast(`⚠️ Student with Reg No "${regNo}" already exists`);
+        return;
+      }
+
+      const genderVal = document.querySelector('input[name="gender"]:checked')?.value || 'Male';
+      const photoSrc = document.getElementById('photoPreview').src;
+
+      const newStudent = {
+        regNo: regNo,
+        studentName: studentName,
+        fatherName: document.getElementById('fatherName').value.trim(),
+        phoneNumber: document.getElementById('phone').value.trim(),
+        cnic: document.getElementById('cnic').value.trim(),
+        email: document.getElementById('email').value.trim(),
+        gender: genderVal,
+        dob: document.getElementById('dob').value,
+        nationality: document.getElementById('nationality').value.trim() || 'Pakistani',
+        religion: document.getElementById('religion').value.trim() || 'Islam',
+        joiningDate: document.getElementById('joiningDate').value,
+        address: document.getElementById('address').value.trim(),
+        guardianName: guardianName,
+        guardianRelationship: document.getElementById('guardianRelationship').value,
+        guardianPhone: document.getElementById('guardianPhone').value.trim(),
+        guardianCnic: document.getElementById('guardianCnic').value.trim(),
+        guardianOccupation: document.getElementById('guardianOccupation').value.trim(),
+        photoUrl: (photoSrc && photoSrc.startsWith('data:')) ? photoSrc : null,
+        classId: cls.id,
+        className: cls.name,
+        session: cls.session,
+        grade: cls.grade,
+        section: cls.section,
+        status: 'Active',
+        password: 'MESS'
+      };
+
+      students.push(newStudent);
+      saveStudents(students);
+      showSuccessToast(`Student "${studentName}" is enrolled successfully in ${cls.name}`);
+      resetStudentForm();
+    }
+
+    function resetStudentForm() {
+      if (editingRegNo) {
+        window.location.href = 'student-details.html';
+        return;
+      }
+      document.getElementById('studentForm').reset();
+      document.getElementById('regNo').value = '';
+      document.getElementById('photoPreview').src = '';
+      document.getElementById('photoFrame').classList.remove('has-image');
+      document.getElementById('fileName').textContent = 'Click to upload photo';
+      setDefaultDates();
+    }
+  </script>
+</body>
+</html>

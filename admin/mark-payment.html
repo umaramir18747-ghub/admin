@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MEI – Mark Payment</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  <link rel="stylesheet" href="fee.css">
+</head>
+<body>
+  <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <div class="app-container">
+      <main class="main-panel">
+        <div class="page-header">
+          <h1><i class="fas fa-check-circle"></i> Mark Payment</h1>
+          <p>Collect fee and mark student records as Paid. Paid records will receive a permanent receipt number and can be viewed in Fee Details.</p>
+        </div>
+
+        <div class="card">
+          <div class="card-title">
+            <div class="card-title-left">
+              <i class="fas fa-clock" style="color:#d97706;"></i> Pending Unpaid Fees
+            </div>
+            <span class="badge-counter" id="feeCountBadge">0 Pending</span>
+          </div>
+
+          <!-- Filters Row -->
+          <div class="filters-row">
+            <div class="search-wrap">
+              <i class="fas fa-search"></i>
+              <input type="text" class="search-input" id="searchInput" placeholder="Search by student name, reg no, fee type..." oninput="applyFilters()">
+            </div>
+            <select class="filter-select" id="classFilter" onchange="applyFilters()">
+              <option value="">All Classes</option>
+            </select>
+            <select class="filter-select" id="feeTypeFilter" onchange="applyFilters()">
+              <option value="">All Fee Types</option>
+            </select>
+            <select class="filter-select" id="feeMonthFilter" onchange="applyFilters()">
+              <option value="">All Fee Months</option>
+            </select>
+          </div>
+
+          <!-- Table Wrapper -->
+          <div class="student-table-wrapper">
+            <table>
+              <thead>
+                <tr>
+                  <th>Reg No.</th>
+                  <th>Student Name</th>
+                  <th>Class</th>
+                  <th>Fee Type</th>
+                  <th>Fee Month</th>
+                  <th>Due Date</th>
+                  <th>Amount (PKR)</th>
+                  <th style="text-align:right;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="feeTableBody">
+                <!-- Records populated dynamically -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" id="confirmModal">
+    <div class="modal-box" style="max-width: 440px;">
+      <div class="modal-header" style="background:#b91c1c;">
+        <h3><i class="fas fa-exclamation-triangle"></i> Confirm Delete</h3>
+        <button class="modal-close" onclick="closeConfirmModal()">&times;</button>
+      </div>
+      <div class="modal-body">
+        <p id="confirmMessage" style="font-size:14.5px; color:#334155; margin-bottom:20px; line-height:1.5;"></p>
+        <div style="display:flex; justify-content:flex-end; gap:10px;">
+          <button type="button" class="btn btn-secondary" onclick="closeConfirmModal()">Cancel</button>
+          <button type="button" class="btn btn-primary" id="confirmDeleteBtn" style="background:#dc2626;">Delete Fee Record</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script>
+    // ================= COMPONENT LOADING (HEADER & SIDEBAR) =================
+    function loadComponents() {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('header-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading header:', err));
+
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => {
+          document.getElementById('sidebar-placeholder').innerHTML = data;
+        })
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    window.addEventListener('load', function() {
+      loadComponents();
+
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+
+      buildFilters();
+      applyFilters();
+    });
+
+    // ================= STORAGE HELPERS =================
+    function loadFeeRecords() {
+      try {
+        const stored = localStorage.getItem('messFeeRecords');
+        return stored ? JSON.parse(stored) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+
+    function saveFeeRecords(records) {
+      localStorage.setItem('messFeeRecords', JSON.stringify(records));
+    }
+
+    let pendingDeleteId = null;
+
+    function generateReceiptNumber() {
+      const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+      let res = "RCP-";
+      for (let i = 0; i < 7; i++) {
+        res += chars.charAt(Math.floor(Math.random() * chars.length));
+      }
+      return res;
+    }
+
+    function buildFilters() {
+      const records = loadFeeRecords();
+
+      const classes = [...new Set(records.map(r => r.className).filter(Boolean))].sort();
+      const classSel = document.getElementById('classFilter');
+      classSel.innerHTML = '<option value="">All Classes</option>' +
+        classes.map(c => `<option value="${c}">${c}</option>`).join('');
+
+      const feeTypes = [...new Set(records.map(r => r.feeType).filter(Boolean))].sort();
+      const feeTypeSel = document.getElementById('feeTypeFilter');
+      feeTypeSel.innerHTML = '<option value="">All Fee Types</option>' +
+        feeTypes.map(f => `<option value="${f}">${f}</option>`).join('');
+
+      const feeMonths = [...new Set(records.map(r => r.feeMonth).filter(Boolean))].sort();
+      const feeMonthSel = document.getElementById('feeMonthFilter');
+      feeMonthSel.innerHTML = '<option value="">All Fee Months</option>' +
+        feeMonths.map(m => `<option value="${m}">${m}</option>`).join('');
+    }
+
+    function applyFilters() {
+      const search = document.getElementById('searchInput').value.toLowerCase().trim();
+      const classVal = document.getElementById('classFilter').value;
+      const feeTypeVal = document.getElementById('feeTypeFilter').value;
+      const feeMonthVal = document.getElementById('feeMonthFilter').value;
+
+      let records = loadFeeRecords().filter(r => r.status === "Unpaid");
+
+      if (classVal) records = records.filter(r => r.className === classVal);
+      if (feeTypeVal) records = records.filter(r => r.feeType === feeTypeVal);
+      if (feeMonthVal) records = records.filter(r => r.feeMonth === feeMonthVal);
+      if (search) {
+        records = records.filter(r =>
+          (r.studentName && r.studentName.toLowerCase().includes(search)) ||
+          (r.regNo && r.regNo.toLowerCase().includes(search)) ||
+          (r.feeType && r.feeType.toLowerCase().includes(search))
+        );
+      }
+
+      renderTable(records);
+    }
+
+    function renderTable(records) {
+      const tbody = document.getElementById('feeTableBody');
+      document.getElementById('feeCountBadge').textContent = `${records.length} Pending`;
+
+      if (records.length === 0) {
+        tbody.innerHTML = `
+          <tr>
+            <td colspan="8" style="text-align:center; padding:36px; color:#94a3b8;">
+              <i class="fas fa-check-circle" style="font-size:32px; color:#10b981; margin-bottom:8px; display:block;"></i>
+              No pending unpaid fees found matching your filters.
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      tbody.innerHTML = records.map(r => `
+        <tr>
+          <td><strong>${r.regNo}</strong></td>
+          <td>${r.studentName}</td>
+          <td>${r.className}</td>
+          <td><span class="btn-pill" style="background:#eff6ff; border-color:#dbeafe; color:#1e40af;"><i class="fas fa-tag"></i> ${r.feeType}</span></td>
+          <td>${r.feeMonth}</td>
+          <td>${r.dueDate || '—'}</td>
+          <td><strong style="color:#1e3a8a;">PKR ${(r.amount || 0).toLocaleString()}</strong></td>
+          <td style="text-align:right;">
+            <div style="display:flex; justify-content:flex-end; gap:8px;">
+              <button class="btn-pill pending" id="payBtn-${r.id}" onclick="markAsPaid('${r.id}')" title="Collect fee & mark as Paid">
+                <i class="fas fa-clock"></i> Mark Paid
+              </button>
+            </div>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function markAsPaid(recordId) {
+      const records = loadFeeRecords();
+      const idx = records.findIndex(r => r.id === recordId);
+
+      if (idx === -1) {
+        showToast('⚠️ Fee record not found');
+        return;
+      }
+
+      // Visual feedback: switch button to "Paid" (blue) state
+      const btn = document.getElementById(`payBtn-${recordId}`);
+      if (btn) {
+        btn.classList.remove('pending');
+        btn.classList.add('paid');
+        btn.innerHTML = `<i class="fas fa-check-circle"></i> Paid`;
+        btn.disabled = true;
+      }
+
+      const receipt = generateReceiptNumber();
+      const nowStr = new Date().toLocaleString('en-PK', { hour12: true });
+
+      records[idx].status = "Paid";
+      records[idx].paidDateTime = nowStr;
+      records[idx].receiptNo = receipt;
+
+      saveFeeRecords(records);
+      showToast(`✅ Payment recorded for ${records[idx].studentName}! Receipt: ${receipt}`);
+
+      // Small delay so user sees the blue "Paid" state, then refresh table
+      setTimeout(() => {
+        buildFilters();
+        applyFilters();
+      }, 700);
+    }
+
+    function promptDelete(recordId) {
+      const records = loadFeeRecords();
+      const rec = records.find(r => r.id === recordId);
+      if (!rec) return;
+
+      pendingDeleteId = recordId;
+      document.getElementById('confirmMessage').innerHTML = `
+        Are you sure you want to delete the pending fee record for <strong>${rec.studentName}</strong> (${rec.regNo})?<br><br>
+        <strong>${rec.feeType} (${rec.feeMonth})</strong> — PKR ${(rec.amount || 0).toLocaleString()}
+      `;
+
+      document.getElementById('confirmDeleteBtn').onclick = () => {
+        executeDelete(recordId);
+      };
+      document.getElementById('confirmModal').classList.add('open');
+    }
+
+    function executeDelete(recordId) {
+      let records = loadFeeRecords();
+      records = records.filter(r => r.id !== recordId);
+      saveFeeRecords(records);
+      closeConfirmModal();
+      showToast('🗑️ Fee record deleted successfully');
+      buildFilters();
+      applyFilters();
+    }
+
+    function closeConfirmModal() {
+      document.getElementById('confirmModal').classList.remove('open');
+      pendingDeleteId = null;
+    }
+  </script>
+</body>
+</html>
