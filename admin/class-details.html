@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – Class Management | Secure Delete Modal</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="view-details.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+  
+</head>
+<body>
+    <!-- Header will be loaded here -->
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    
+    <!-- Sidebar will be loaded here -->
+    <div id="sidebar-placeholder"></div>
+
+    <!-- Main Content -->
+<div class="app-container">
+  <main class="main-panel">
+    <div class="page-header">
+      <h1><i class="fas fa-chalkboard"></i> Class Directory & Records</h1>
+      <p>Manage class sessions, monitor student enrollment, and view detailed class profiles.</p>
+    </div>
+    <div class="data-card">
+      <div class="card-header">
+        <h2><i class="fas fa-table-list"></i> All Classes <span class="badge-count" id="classCountBadge">0</span></h2>
+        <div class="search-wrapper">
+          <i class="fas fa-search search-icon"></i>
+          <input type="text" id="classSearchInput" placeholder="Search by class name or ID..." class="search-input">
+          <button class="search-clear-btn" id="clearSearchBtn" style="display: none;"><i class="fas fa-times-circle"></i></button>
+        </div>
+      </div>
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Class Name</th>
+              <th>Class ID</th>
+              <th>Session</th>
+              <th>Grade</th>
+              <th>Section</th>
+              <th>Students</th>
+              <th>Status</th>
+              <th style="text-align: right;">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="classTableBody"></tbody>
+        </table>
+      </div>
+      <div id="noResultsMessage" style="display: none; text-align: center; padding: 40px 20px; color: #64748b;">
+        <i class="fas fa-search" style="font-size: 32px; display: block; margin-bottom: 12px; color: #94a3b8;"></i>
+        <p style="font-size: 16px; font-weight: 500; color: #1e293b;">No classes found</p>
+        <p style="font-size: 14px;">Try adjusting your search terms</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<!-- MODAL overlay for class detail view -->
+<div id="classModalOverlay" class="modal-overlay">
+  <div class="class-modal-container">
+    <div class="modal-header-custom">
+      <h2 id="modalClassTitle"><i class="fas fa-id-card"></i> Class Profile</h2>
+      <button class="close-modal-btn" id="closeModalBtn"><i class="fas fa-times"></i></button>
+    </div>
+    <div id="classModalDynamicContent"></div>
+    <div class="modal-footer-custom">
+      <button id="modalFooterCloseBtn" style="background:#f1f5f9; border:1px solid #cbd5e1; padding: 8px 20px; font-weight:600; cursor:pointer;"><i class="fas fa-times"></i> Close</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== SECURE DELETE MODAL (GitHub-style) ===== -->
+<div id="deleteClassModalOverlay" class="delete-modal-overlay">
+  <div class="delete-modal-container">
+    <div class="delete-modal-header">
+      <div class="warning-icon"><i class="fas fa-exclamation-triangle"></i></div>
+      <h2>Delete this class? <small>This action cannot be undone.</small></h2>
+    </div>
+    <div class="delete-modal-body">
+      <p>This will permanently delete the class <strong id="deleteClassDisplayName">—</strong> and remove all associated student records. Please type the class ID to confirm.</p>
+      <div class="warning-box">
+        <i class="fas fa-skull-crossbones"></i>
+        <div>
+          <strong>Warning:</strong> All students enrolled in this class will be <strong>permanently removed</strong> from the system. This action cannot be undone.
+        </div>
+      </div>
+      <label>Class ID <span class="req">*</span></label>
+      <input type="text" id="deleteClassConfirmInput" placeholder="Type class ID here..." autocomplete="off" spellcheck="false">
+      <div class="input-hint">Type <code id="deleteClassExpectedId">—</code> to confirm.</div>
+    </div>
+    <div class="delete-modal-footer">
+      <button class="btn-cancel" id="cancelDeleteBtn"><i class="fas fa-times"></i> Cancel</button>
+      <button class="btn-delete" id="confirmDeleteBtn" disabled><i class="fas fa-trash-alt"></i> Delete Class</button>
+    </div>
+  </div>
+</div>
+
+<script src="../components.js"></script>
+<script>
+    function loadComponents() {
+      fetch('header.html')
+        .then(response => response.text())
+        .then(data => document.getElementById('header-placeholder').innerHTML = data)
+        .catch(err => console.error('Error loading header:', err));
+
+      fetch('sidebar.html')
+        .then(response => response.text())
+        .then(data => document.getElementById('sidebar-placeholder').innerHTML = data)
+        .catch(err => console.error('Error loading sidebar:', err));
+    }
+
+    window.onload = function() {
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 400);
+    };
+
+  // ===== Storage Helpers =====
+  function loadClassesFromStorage() {
+    const stored = localStorage.getItem('messClasses');
+    return stored ? JSON.parse(stored) : [];
+  }
+  function saveClassesToStorage(data) {
+    localStorage.setItem('messClasses', JSON.stringify(data));
+  }
+  function loadStudentsFromStorage() {
+    const stored = localStorage.getItem('messStudents');
+    return stored ? JSON.parse(stored) : [];
+  }
+  function saveStudentsToStorage(data) {
+    localStorage.setItem('messStudents', JSON.stringify(data));
+  }
+
+  function buildClassesViewModel() {
+    const rawClasses = loadClassesFromStorage();
+    const allStudents = loadStudentsFromStorage();
+    return rawClasses.map(c => {
+      const studentsInClass = allStudents
+        .filter(s => s.classId === c.id)
+        .map(s => ({
+          photo: s.photoUrl || null,
+          name: s.studentName,
+          id: s.regNo,
+          fatherName: s.fatherName,
+          phone: s.phone || s.phoneNumber || ''
+        }));
+      return { ...c, students: studentsInClass };
+    });
+  }
+
+  let classes = buildClassesViewModel();
+  let filteredClasses = [...classes];
+
+  function showToast(msg) {
+    let t = document.createElement('div');
+    t.className = 'toast-msg';
+    t.innerHTML = `<i class="fas fa-info-circle"></i> ${msg}`;
+    document.body.appendChild(t);
+    setTimeout(() => t.remove(), 2200);
+  }
+
+  function updateClassCount() {
+    document.getElementById('classCountBadge').innerText = filteredClasses.length;
+  }
+
+  function renderClassTable(dataToRender = filteredClasses) {
+    const tbody = document.getElementById('classTableBody');
+    const noResults = document.getElementById('noResultsMessage');
+    if (!tbody) return;
+    
+    if (dataToRender.length === 0) {
+      tbody.innerHTML = '';
+      noResults.style.display = 'block';
+      document.getElementById('classCountBadge').innerText = '0';
+      return;
+    }
+    
+    noResults.style.display = 'none';
+    
+    tbody.innerHTML = dataToRender.map(c => {
+      const studentCount = c.students?.length || 0;
+      const statusClass = c.status === 'Active' ? 'active-select' : 'graduated-select';
+      return `
+        <tr>
+          <td><strong>${escapeHtml(c.name)}</strong></td>
+          <td>${escapeHtml(c.id)}</td>
+          <td>${escapeHtml(c.session)}</td>
+          <td>${escapeHtml(c.grade)}</td>
+          <td>${escapeHtml(c.section)}</td>
+          <td><span class="student-count-badge"><i class="fas fa-user-friends"></i> ${studentCount} ${studentCount === 1 ? 'Student' : 'Students'}</span></td>
+          <td>
+            <select class="status-select ${statusClass}" data-classid="${c.id}" onchange="updateClassStatus('${c.id}', this.value)">
+              <option value="Active" ${c.status === 'Active' ? 'selected' : ''}>Active</option>
+              <option value="Graduated" ${c.status === 'Graduated' ? 'selected' : ''}>Graduated</option>
+            </select>
+          </td>
+          <td style="text-align: right">
+            <div class="action-icons">
+              <i class="fas fa-eye view-icon" data-classid="${c.id}" title="View Details"></i>
+              <i class="fas fa-arrow-up promote-icon" data-classid="${c.id}" title="Promote Class"></i>
+              <i class="fas fa-trash-alt delete-icon" data-classid="${c.id}" title="Delete Class"></i>
+            </div>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    document.querySelectorAll('.view-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        openClassDetailPanel(icon.dataset.classid);
+      });
+    });
+    document.querySelectorAll('.promote-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        window.location.href = `make-class.html?edit=${encodeURIComponent(icon.dataset.classid)}`;
+      });
+    });
+    document.querySelectorAll('.delete-icon').forEach(icon => {
+      icon.addEventListener('click', (e) => {
+        e.stopPropagation();
+        // NEW: Open secure delete modal instead of direct confirm
+        openDeleteConfirmationModal(icon.dataset.classid);
+      });
+    });
+    
+    updateClassCount();
+  }
+
+  function filterClasses(searchTerm) {
+    const term = searchTerm.toLowerCase().trim();
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (!term) {
+      filteredClasses = [...classes];
+      clearBtn.style.display = 'none';
+    } else {
+      filteredClasses = classes.filter(c => 
+        c.name.toLowerCase().includes(term) || 
+        c.id.toLowerCase().includes(term)
+      );
+      clearBtn.style.display = 'block';
+    }
+    
+    renderClassTable(filteredClasses);
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('classSearchInput');
+    const clearBtn = document.getElementById('clearSearchBtn');
+    
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        filterClasses(this.value);
+      });
+      
+      searchInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape') {
+          this.value = '';
+          filterClasses('');
+          this.blur();
+        }
+      });
+    }
+    
+    if (clearBtn) {
+      clearBtn.addEventListener('click', function() {
+        if (searchInput) {
+          searchInput.value = '';
+          filterClasses('');
+          searchInput.focus();
+        }
+      });
+    }
+  });
+
+  // ===== Update class status (Active <-> Graduated) =====
+  window.updateClassStatus = (classId, newStatus) => {
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+
+    cls.status = newStatus;
+    persistClasses();
+
+    const searchInput = document.getElementById('classSearchInput');
+    filterClasses(searchInput ? searchInput.value : '');
+
+    if (newStatus === 'Graduated') {
+      showToast(`🎓 Class marked Graduated — student statuses will show "Graduated"`);
+    } else {
+      showToast(`✅ Class status updated to ${newStatus}`);
+    }
+  };
+
+  function persistClasses() {
+    const stripped = classes.map(({ students, ...rest }) => rest);
+    saveClassesToStorage(stripped);
+  }
+
+  // ===== SECURE DELETE MODAL LOGIC (GitHub-style) =====
+  let pendingDeleteClassId = null;
+
+  function openDeleteConfirmationModal(classId) {
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+
+    pendingDeleteClassId = classId;
+
+    // Populate modal
+    document.getElementById('deleteClassDisplayName').textContent = `${escapeHtml(cls.name)} (${escapeHtml(cls.id)})`;
+    document.getElementById('deleteClassExpectedId').textContent = escapeHtml(cls.id);
+    
+    const input = document.getElementById('deleteClassConfirmInput');
+    input.value = '';
+    input.classList.remove('invalid');
+    input.placeholder = `Type "${cls.id}" to confirm...`;
+    
+    // Reset button state
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    confirmBtn.disabled = true;
+
+    // Show overlay
+    document.getElementById('deleteClassModalOverlay').classList.add('active');
+
+    // Focus input
+    setTimeout(() => input.focus(), 150);
+  }
+
+  function closeDeleteConfirmationModal() {
+    document.getElementById('deleteClassModalOverlay').classList.remove('active');
+    pendingDeleteClassId = null;
+    document.getElementById('deleteClassConfirmInput').classList.remove('invalid');
+  }
+
+  // Input validation
+  document.getElementById('deleteClassConfirmInput').addEventListener('input', function() {
+    const expectedId = document.getElementById('deleteClassExpectedId').textContent;
+    const confirmBtn = document.getElementById('confirmDeleteBtn');
+    
+    if (this.value.trim() === expectedId) {
+      confirmBtn.disabled = false;
+      this.classList.remove('invalid');
+    } else {
+      confirmBtn.disabled = true;
+      if (this.value.trim().length > 0) {
+        this.classList.add('invalid');
+      } else {
+        this.classList.remove('invalid');
+      }
+    }
+  });
+
+  // Confirm delete
+  document.getElementById('confirmDeleteBtn').addEventListener('click', function() {
+    const expectedId = document.getElementById('deleteClassExpectedId').textContent;
+    const inputVal = document.getElementById('deleteClassConfirmInput').value.trim();
+    
+    if (inputVal !== expectedId) {
+      document.getElementById('deleteClassConfirmInput').classList.add('invalid');
+      showToast('❌ Class ID does not match. Please type the exact class ID.');
+      return;
+    }
+
+    if (!pendingDeleteClassId) return;
+
+    // Perform actual deletion (cascade delete students)
+    performClassDeletion(pendingDeleteClassId);
+    closeDeleteConfirmationModal();
+  });
+
+  // Cancel
+  document.getElementById('cancelDeleteBtn').addEventListener('click', closeDeleteConfirmationModal);
+
+  // Close on overlay click
+  document.getElementById('deleteClassModalOverlay').addEventListener('click', function(e) {
+    if (e.target === this) closeDeleteConfirmationModal();
+  });
+
+  // Close on Escape
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && document.getElementById('deleteClassModalOverlay').classList.contains('active')) {
+      closeDeleteConfirmationModal();
+    }
+  });
+
+  // ===== ACTUAL DELETE LOGIC (cascade delete students) =====
+  function performClassDeletion(classId) {
+    const allStudents = loadStudentsFromStorage();
+    const affectedStudents = allStudents.filter(s => s.classId === classId);
+    const affectedCount = affectedStudents.length;
+
+    // Remove class from local array
+    classes = classes.filter(c => c.id !== classId);
+    persistClasses();
+
+    // Remove students from storage
+    if (affectedCount > 0) {
+      const remainingStudents = allStudents.filter(s => s.classId !== classId);
+      saveStudentsToStorage(remainingStudents);
+    }
+
+    // Refresh table
+    const searchInput = document.getElementById('classSearchInput');
+    filterClasses(searchInput ? searchInput.value : '');
+
+    // Toast
+    if (affectedCount > 0) {
+      showToast(`🗑️ Class ${classId} + ${affectedCount} student${affectedCount === 1 ? '' : 's'} deleted`);
+    } else {
+      showToast(`🗑️ Class ${classId} deleted`);
+    }
+  }
+
+  function escapeHtml(str) { 
+    if (!str) return ''; 
+    return str.replace(/[&<>]/g, m => m === '&' ? '&amp;' : m === '<' ? '&lt;' : '&gt;'); 
+  }
+
+  function openClassDetailPanel(classId) {
+    const cls = classes.find(c => c.id === classId);
+    if (!cls) return;
+    const studentsList = cls.students || [];
+    const studentsHtml = studentsList.map(s => {
+      const photoHtml = s.photo ? `<img src="${s.photo}" class="student-img-class" alt="student">` : `<div class="placeholder-icon-class"><i class="fas fa-user-graduate"></i></div>`;
+      return `
+        <div class="student-card-class">
+          <div class="photo-frame-class">${photoHtml}</div>
+          <div class="student-name-class">${escapeHtml(s.name)}</div>
+          <div class="student-id-class">${escapeHtml(s.id)}</div>
+          <div style="font-size:12px; color:#475569; margin-top:6px;">${escapeHtml(s.fatherName || '—')}</div>
+          <div style="font-size:11px; color:#64748b;">${escapeHtml(s.phone || '')}</div>
+        </div>
+      `;
+    }).join('');
+
+    const statusBadgeClass = cls.status === 'Active' ? 'status-active' : 'status-graduated';
+    const modalContent = `
+      <div style="padding: 0;">
+        <div class="info-summary-grid">
+          <div class="info-summary-item"><strong><i class="fas fa-tag"></i> Class ID:</strong> <span>${escapeHtml(cls.id)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-calendar"></i> Session:</strong> <span>${escapeHtml(cls.session)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-chart-line"></i> Grade:</strong> <span>${escapeHtml(cls.grade)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-layer-group"></i> Section:</strong> <span>${escapeHtml(cls.section)}</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-users"></i> Total Students:</strong> <span><strong style="color:#2563eb;">${studentsList.length}</strong> enrolled</span></div>
+          <div class="info-summary-item"><strong><i class="fas fa-flag-checkered"></i> Status:</strong> <span><span class="status-badge ${statusBadgeClass}">${cls.status}</span></span></div>
+        </div>
+        <div style="border-top: 1px solid #eef2f8; padding: 20px 28px 8px 28px;">
+          <h4 style="display:flex; align-items:center; gap:10px; font-size:16px; font-weight:700; color:#1e293b;"><i class="fas fa-id-card"></i> Students — Official Photo Frame</h4>
+        </div>
+        <div class="student-grid-class">
+          ${studentsList.length ? studentsHtml : '<div style="grid-column:1/-1; text-align:center; padding:48px; color:#64748b;"><i class="fas fa-user-slash"></i> No students enrolled in this class</div>'}
+        </div>
+      </div>
+    `;
+    document.getElementById('classModalDynamicContent').innerHTML = modalContent;
+    document.getElementById('modalClassTitle').innerHTML = `<i class="fas fa-chalkboard-user"></i> ${escapeHtml(cls.name)}`;
+    document.getElementById('classModalOverlay').classList.add('active');
+  }
+
+  function closeClassModal() {
+    document.getElementById('classModalOverlay').classList.remove('active');
+  }
+
+  document.getElementById('closeModalBtn').addEventListener('click', closeClassModal);
+  document.getElementById('modalFooterCloseBtn').addEventListener('click', closeClassModal);
+  document.getElementById('classModalOverlay').addEventListener('click', (e) => {
+    if (e.target === document.getElementById('classModalOverlay')) closeClassModal();
+  });
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && document.getElementById('classModalOverlay').classList.contains('active')) closeClassModal();
+  });
+
+  filteredClasses = [...classes];
+  renderClassTable();
+</script>
+</body>
+</html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+  <title>MEI – Admin Profile | Muhammad Umar</title>
+  <link rel="icon" type="image/png" href="../logo2.png">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+  <link rel="stylesheet" href="../profile.css">
+  <link rel="stylesheet" href="../components.css">
+  <link rel="stylesheet" href="../responsive-components.css">
+</head>
+<body>
+  <div id="header-placeholder"></div>
+
+  <div class="app-wrapper" id="appWrapper">
+    <div id="sidebar-placeholder"></div>
+
+    <div class="app-container">
+      <main class="main-panel">
+        <div class="page-header">
+          <h1><i class="fas fa-user-shield"></i> Admin Profile</h1>
+        </div>
+
+        <div class="dashboard-content">
+          <!-- LEFT COLUMN -->
+          <div class="left-column">
+
+            <!-- Personal Information -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-user" style="color: var(--primary);"></i>
+                <h2>Personal Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Name</div>
+                  <div class="info-value">Muhammad Umar</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Phone</div>
+                  <div class="info-value">0306-1874711</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">CNIC</div>
+                  <div class="info-value">33102-2739129-3</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Email</div>
+                  <div class="info-value">umaramir18747@gmail.com</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Address</div>
+                  <div class="info-value">Faisalabad</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Gender</div>
+                  <div class="info-value">Male</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Date of Birth</div>
+                  <div class="info-value">31/10/2004</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Nationality</div>
+                  <div class="info-value">Pakistan</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Religion</div>
+                  <div class="info-value">Islam</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- RIGHT COLUMN -->
+          <div class="right-column">
+
+            <!-- Admin Photo & Registration -->
+            <div class="card photo-card">
+              <div class="card-content">
+                <div class="photo-frame">
+                  <img id="adminPhoto"
+                       src="../image.png"
+                       alt="Muhammad Umar">
+                </div>
+                <div class="reg-number-bold" id="regNumber">
+                  MEI.ADMIN.UMAR.18747
+                </div>
+              </div>
+            </div>
+
+            <!-- Account Information (Role, Username, Status) -->
+            <div class="card">
+              <div class="card-header">
+                <i class="fas fa-id-badge" style="color: var(--primary);"></i>
+                <h2>Account Information</h2>
+              </div>
+              <div class="card-content">
+                <div class="info-row">
+                  <div class="info-label">Role</div>
+                  <div class="info-value">Admin</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Username</div>
+                  <div class="info-value">MEI.ADMIN.UMAR.18747</div>
+                </div>
+                <div class="info-row">
+                  <div class="info-label">Status</div>
+                  <div class="info-value">
+                    <span class="status-badge"
+                          style="background: #d1fae5; color: #166534;">
+                      Active
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script src="../components.js"></script>
+  <script>
+  (function() {
+    'use strict';
+
+    // ===== Load components (header/sidebar) =====
+    function loadComponents() {
+      fetch('header.html')
+        .then(r => r.text())
+        .then(data => {
+          const headerEl = document.getElementById('header-placeholder');
+          if (headerEl) headerEl.innerHTML = data;
+        })
+        .catch(() => console.log("Header loaded (simulated)"));
+
+      fetch('sidebar.html')
+        .then(r => r.text())
+        .then(data => {
+          const sidebarEl = document.getElementById('sidebar-placeholder');
+          if (sidebarEl) sidebarEl.innerHTML = data;
+        })
+        .catch(() => console.log("Sidebar loaded (simulated)"));
+    }
+
+    // ===== onload =====
+    window.onload = function() {
+      loadComponents();
+      setTimeout(() => {
+        if (typeof window.initHeaderAndSidebar === 'function') {
+          window.initHeaderAndSidebar();
+        }
+      }, 500);
+    };
+
+  })();
+  </script>
+</body>
+</html>
